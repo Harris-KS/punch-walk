@@ -1389,20 +1389,8 @@ async function openRoomPanel(floor,areaKey,label,roomType,bedType,planSrc){
     const fpWrap=document.getElementById('fp-wrap');
     fpWrap.style.display='';
     const doLoad=()=>{
-      if(areaKey==='elevator'){
-        // Zoom into elevator lobby end (right ~80% of floor plan)
-        const wrapW=fpWrap.clientWidth||320;
-        const targetW=Math.max(wrapW*2.2,600);
-        img.style.maxWidth='none';img.style.width=targetW+'px';
-        // Allow browser to reflow before sizing canvas
-        requestAnimationFrame(()=>{
-          resizePanelCanvas();loadAndDrawDots();
-          setTimeout(()=>{fpWrap.scrollLeft=targetW*0.78-wrapW/2;fpWrap.scrollTop=0;},50);
-        });
-      }else{
-        img.style.maxWidth='';img.style.width='';
-        resizePanelCanvas();loadAndDrawDots();
-      }
+      img.style.maxWidth='';img.style.width='';
+      resizePanelCanvas();loadAndDrawDots();
     };
     img.onload=doLoad;
     if(img.complete&&img.naturalWidth)doLoad();
