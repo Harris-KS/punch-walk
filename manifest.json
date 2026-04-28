@@ -1,0 +1,25 @@
+{
+  "name": "Harris Punch Walk",
+  "short_name": "Punch Walk",
+  "description": "Field punch list tool for Harris Associates project teams",
+  "start_url": "./punch-tool.html?pwa=1",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1c2b3a",
+  "theme_color": "#1c2b3a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,7 +1,10 @@
 'use strict';
-const CACHE = 'punch-walk-v15';
+const CACHE = 'punch-walk-v16';
 const CORE_ASSETS = [
   './punch-tool.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
   './floor-plans/complete/floor-1.png',
   './floor-plans/complete/floor-2.png',
   './floor-plans/complete/floor-3.png',

@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#e8a020">
-<link rel="manifest" id="pwa-manifest">
+<link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" id="pwa-touch-icon">
 <title>Harris Punch Walk</title>
 <style>
@@ -508,15 +508,8 @@ function _drawHIcon(size){
     img.src=url;
   });
 }
-(async()=>{
-  const [uri192,uri512]=await Promise.all([_drawHIcon(192),_drawHIcon(512)]);
-  if(uri192)document.getElementById('pwa-touch-icon').href=uri192;
-  if(uri192&&uri512){
-    const manifest={name:'Harris Punch Walk',short_name:'Punch Walk',description:'Field punch list tool for Harris Associates project teams',start_url:'https://harris-ks.github.io/punch-walk/punch-tool.html?pwa=1',scope:'https://harris-ks.github.io/punch-walk/',display:'standalone',background_color:'#1c2b3a',theme_color:'#c7b06f',orientation:'any',icons:[{src:uri192,sizes:'192x192',type:'image/png',purpose:'any maskable'},{src:uri512,sizes:'512x512',type:'image/png',purpose:'any maskable'}]};
-    const mblob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
-    document.getElementById('pwa-manifest').href=URL.createObjectURL(mblob);
-  }
-})();
+// iOS apple-touch-icon (Android uses manifest.json + static PNGs)
+_drawHIcon(192).then(uri=>{if(uri)document.getElementById('pwa-touch-icon').href=uri;});
 // ─── MiniZip (offline-capable ZIP builder) ───────────────────────────────────
 const MiniZip=(()=>{
   function u16(n){return[n&0xFF,(n>>8)&0xFF];}
