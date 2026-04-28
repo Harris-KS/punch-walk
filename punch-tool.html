@@ -933,6 +933,9 @@ function memberKey(m){return m.id||('email:'+m.email);}
 function liveCompanies(){return ST.cfg.accCompanies&&ST.cfg.accCompanies.length?ST.cfg.accCompanies:[];}
 function liveMembers(){return ST.cfg.accMembers&&ST.cfg.accMembers.length?ST.cfg.accMembers:[];}
 
+// Strip "b." hub prefix — DM API returns "b.UUID" but ACC Admin/Issues APIs want bare UUID
+function accPid(id){return (id||'').replace(/^b\./,'').replace(/^a\./,'');}
+
 // ─── ACC PROJECT DATA FETCH ───────────────────────────────────────────────────
 async function accFetchAll(url,token){
   const items=[];let offset=0;const limit=200;
@@ -1039,7 +1042,7 @@ function _updateProjectDisplay(){
 }
 
 async function fetchAccProjectData(){
-  const pid=document.getElementById('cfg-pid').value.trim()||ST.cfg.projectId;
+  const pid=accPid(document.getElementById('cfg-pid').value.trim()||ST.cfg.projectId);
   const statusEl=document.getElementById('acc-fetch-status');
   if(!pid){statusEl.textContent='⚠ Enter Project ID first.';statusEl.style.color='#c00';return;}
   let token;
@@ -1884,7 +1887,7 @@ async function startSync(){
   const log=document.getElementById('sync-log');log.innerHTML='<div class="log-inf">Starting sync for '+pending.length+' item(s)…</div>';
   let token;
   try{token=await getAccToken();}catch(e){logLine(log,'err','Auth error: '+e.message);btn.disabled=false;btn.textContent='Start Sync';return;}
-  const pid=ST.cfg.projectId;
+  const pid=accPid(ST.cfg.projectId);
   const due=addBusinessDays(new Date(),5);
   const watcherIds=(ST.cfg.watchers||[]).filter(k=>k&&!k.startsWith('email:'));
   let ok=0,fail=0;
@@ -1933,7 +1936,7 @@ async function syncOne(issueId){
   const iss=issues.find(i=>i.id===issueId);if(!iss)return;
   let token;
   try{token=await getAccToken();}catch(e){alert('Not logged in: '+e.message);return;}
-  const pid=ST.cfg.projectId;
+  const pid=accPid(ST.cfg.projectId);
   const due=addBusinessDays(new Date(),5);
   const watcherIds=(ST.cfg.watchers||[]).filter(k=>k&&!k.startsWith('email:'));
   const body={title:`${iss.areaLabel||iss.areaKey} (${iss.floor} Floor) — ${iss.description}`,description:`Punch list item\nLocation: ${iss.areaLabel||iss.areaKey}, ${iss.floor} Floor\nAssigned to: ${iss.companyName||'Unassigned'}\nDue: ${due}\n\n${iss.description}\n\n[Casablanca Punch Walk App]`,issueSubtypeId:resolveAccTradeId(iss.tradeId),status:'open',dueDate:due};
