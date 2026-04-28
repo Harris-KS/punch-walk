@@ -1,8 +1,16 @@
 'use strict';
-const CACHE = 'punch-walk-v13';
+const CACHE = 'punch-walk-v14';
 const CORE_ASSETS = [
-  './punch-tool.html'
-  // manifest and icons are generated inline — no separate files needed
+  './punch-tool.html',
+  './floor-plans/complete/floor-1.png',
+  './floor-plans/complete/floor-2.png',
+  './floor-plans/complete/floor-3.png',
+  './floor-plans/complete/floor-4.png',
+  './floor-plans/complete/floor-5.png',
+  './floor-plans/complete/floor-6.png',
+  './floor-plans/complete/floor-7.png',
+  './floor-plans/complete/floor-8.png',
+  './floor-plans/complete/floor-9.png'
 ];
 
 self.addEventListener('install', e => {
