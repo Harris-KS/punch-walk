@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#e8a020">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>Harris Punch Walk</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f0ed;color:#1a1a1a;min-height:100vh;overscroll-behavior:none;}
+/* Header */
+.hdr{background:#1c2b3a;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #e8a020;gap:8px;flex-wrap:wrap;position:sticky;top:0;z-index:100;}
+.hdr h1{font-size:16px;font-weight:700;line-height:1.2;}
+.hdr .sub{font-size:11px;color:#9fb3c8;margin-top:2px;}
+.hdr-right{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.btn{padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;border-radius:4px;border:none;white-space:nowrap;transition:opacity .15s;}
+.btn:hover{opacity:.85;}
+.btn-orange{background:#e8a020;color:#1c2b3a;}
+.btn-blue{background:#0e6fb5;color:#fff;}
+.btn-green{background:#3a7c59;color:#fff;}
+.btn-ghost{background:transparent;color:#9fb3c8;border:1px solid #3a4f63;}
+.btn-ghost:hover{color:#fff;}
+.btn-sm{padding:5px 9px;font-size:11px;}
+.btn-danger{background:#c00;color:#fff;}
+/* Stats bar */
+.stats{background:#253547;padding:6px 16px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;border-bottom:1px solid #1c2b3a;}
+.stat{font-size:12px;color:#9fb3c8;display:flex;align-items:center;gap:4px;}
+.stat strong{color:#e8a020;font-size:13px;}
+.stat-syn strong{color:#4caf80;}
+/* Floor tabs */
+.floor-tabs{background:#fff;border-bottom:2px solid #e0e0e0;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;}
+.floor-tab{padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;color:#555;white-space:nowrap;user-select:none;transition:color .12s;}
+.floor-tab.active{color:#1c2b3a;border-bottom-color:#e8a020;font-weight:700;}
+.floor-tab:hover:not(.active){background:#f5f5f5;color:#1c2b3a;}
+.tab-badge{background:#e55;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;margin-left:4px;}
+/* View toggle */
+.view-toggle{display:flex;border:1.5px solid #1c2b3a;border-radius:5px;overflow:hidden;width:fit-content;}
+.view-btn{padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:#fff;color:#1c2b3a;}
+.view-btn.active{background:#1c2b3a;color:#fff;}
+/* Content area */
+.content{padding:14px 16px;}
+/* Legend */
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:11px;color:#555;align-items:center;}
+.leg-dot{width:11px;height:11px;border-radius:3px;display:inline-block;margin-right:3px;vertical-align:middle;}
+/* Area row (corridor / elevator) */
+.area-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.area-btn{padding:9px 18px;font-size:13px;font-weight:700;border:2px solid;border-radius:6px;cursor:pointer;position:relative;transition:transform .12s,box-shadow .12s;user-select:none;white-space:nowrap;}
+.area-btn:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.2);}
+.area-btn.selected{box-shadow:0 0 0 3px #e8a020;}
+.a-corridor{background:#2a1060;border-color:#2a1060;color:#fff;}
+.a-corridor:hover{background:#3a1880;}
+.a-corridor.has-items{background:#5a20a0;border-color:#5a20a0;}
+.a-elevator{background:#0a3a8a;border-color:#0a3a8a;color:#fff;}
+.a-elevator:hover{background:#1050aa;}
+.a-elevator.has-items{background:#1060c0;border-color:#1060c0;}
+/* Room grid */
+.room-grid{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:10px 2px 4px;}
+.room-row{display:flex;gap:5px;flex-wrap:nowrap;margin-bottom:5px;}
+.room-row:last-child{margin-bottom:0;}
+.hallway-strip{height:6px;background:linear-gradient(90deg,#c8c0b0,#e0d8cc,#c8c0b0);border-radius:3px;margin:2px 0;opacity:.6;}
+.room-btn{width:54px;height:48px;padding:3px 2px;font-size:13px;font-weight:700;border:1.5px solid;border-radius:5px;cursor:pointer;text-align:center;position:relative;transition:transform .1s,box-shadow .1s;user-select:none;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;}
+.room-btn:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.18);}
+.room-btn.selected{box-shadow:0 0 0 3px #e8a020;transform:translateY(-1px);}
+.room-label{position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:8px;font-weight:700;opacity:.75;line-height:1;pointer-events:none;}
+.punch-badge{position:absolute;top:-6px;right:-6px;background:#e55;color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #f0f0ed;}
+.synced-dot{position:absolute;top:-4px;left:-4px;background:#4caf80;width:9px;height:9px;border-radius:50%;border:2px solid #f0f0ed;}
+.rt-Regular{background:#fff;border-color:#bbb;color:#222;}
+.rt-Regular.has-items{background:#fff8f8;border-color:#e09090;}
+.rt-ADA{background:#fffcf0;border-color:#d4b04a;color:#5a3e00;}
+.rt-ADA.has-items{background:#fff5dc;border-color:#c09020;}
+.rt-CornerSuite{background:#f0f6ff;border-color:#4a90d9;color:#0a3060;}
+.rt-CornerSuite.has-items{background:#e0eeff;border-color:#2060c0;}
+.rt-PoolSuite{background:#f0fff5;border-color:#3da870;color:#003a1a;}
+.rt-PoolSuite.has-items{background:#d8f5e8;border-color:#20884a;}
+.rt-ADAPoolSuite{background:#fff3e8;border-color:#d47a30;color:#5a2a00;}
+.rt-ADAPoolSuite.has-items{background:#ffe8cc;border-color:#b05010;}
+/* Map view */
+#map-section{display:none;}
+.map-wrap{position:relative;border:1.5px solid #ddd;border-radius:6px;overflow:auto;max-height:65vh;background:#e0e0e0;margin-bottom:12px;touch-action:pan-x pan-y;}
+.map-img-inner{position:relative;display:inline-block;}
+#map-img{display:block;max-width:100%;height:auto;}
+#map-canvas{position:absolute;top:0;left:0;cursor:crosshair;}
+.map-hint{font-size:12px;color:#555;margin-bottom:8px;font-style:italic;}
+/* Room panel overlay */
+#room-panel{position:fixed;inset:0;background:#fff;z-index:200;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;}
+#room-panel.open{transform:none;}
+.panel-hdr{background:#1c2b3a;color:#fff;padding:11px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;}
+.panel-room-num{font-size:20px;font-weight:700;letter-spacing:1px;}
+.panel-sub{font-size:11px;color:#9fb3c8;margin-top:2px;}
+.panel-tag{font-size:11px;background:#e8a020;color:#1c2b3a;padding:3px 9px;border-radius:12px;font-weight:600;}
+/* Floor plan in panel */
+.fp-wrap{position:relative;flex-shrink:0;background:#e8e8e8;display:flex;align-items:center;justify-content:center;overflow:auto;max-height:35vh;border-bottom:2px solid #ddd;touch-action:pan-x pan-y;}
+.fp-inner{position:relative;display:inline-block;}
+#panel-fp-img{display:block;max-width:100%;max-height:33vh;height:auto;user-select:none;}
+#panel-fp-canvas{position:absolute;top:0;left:0;cursor:crosshair;}
+.fp-hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:4px 10px;border-radius:12px;white-space:nowrap;pointer-events:none;}
+.fp-placeholder{padding:40px 20px;text-align:center;color:#888;font-size:13px;font-style:italic;}
+/* Issue form */
+.issue-form{padding:10px 14px;border-bottom:1px solid #eee;background:#fafafa;flex-shrink:0;}
+.form-row{display:flex;gap:7px;margin-bottom:7px;align-items:center;}
+.form-input{flex:1;padding:8px 10px;font-size:13px;border:1.5px solid #ccc;border-radius:4px;outline:none;}
+.form-input:focus{border-color:#1c2b3a;}
+.form-select{padding:7px 9px;font-size:12px;border:1.5px solid #ccc;border-radius:4px;background:#fff;outline:none;cursor:pointer;flex:1;min-width:130px;}
+.form-select:focus{border-color:#1c2b3a;}
+.photo-strip{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 0;}
+.pending-thumb-wrap{position:relative;}
+.pending-thumb{width:46px;height:46px;object-fit:cover;border-radius:4px;border:1.5px solid #ccc;cursor:pointer;}
+.thumb-del{position:absolute;top:-5px;right:-5px;background:#c00;color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;cursor:pointer;font-weight:700;padding:0;}
+.btn-photo{background:#f5f5f5;border:1.5px dashed #bbb;color:#444;font-size:12px;padding:5px 10px;cursor:pointer;border-radius:4px;font-weight:600;}
+.btn-photo:hover{background:#eef3ff;border-color:#7090d0;}
+.btn-add-issue{background:#1c2b3a;color:#fff;border:none;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;border-radius:4px;white-space:nowrap;}
+.btn-add-issue:hover{background:#253547;}
+.co-lock{flex:1;min-width:130px;padding:7px 10px;font-size:12px;border:1.5px solid #ddd;border-radius:4px;background:#f8f8f8;color:#999;display:flex;align-items:center;gap:5px;}
+.co-lock.has-co{background:#f0fff4;border-color:#80c8a0;color:#1a5a2a;font-weight:600;}
+.co-lock-icon{font-size:11px;flex-shrink:0;}
+/* Issue list */
+.issue-list{flex:1;overflow-y:auto;padding:8px 14px 20px;}
+.issue-empty{font-size:13px;color:#aaa;text-align:center;padding:20px;font-style:italic;}
+.issue-item{display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-bottom:1px solid #f0f0f0;}
+.issue-item:last-child{border-bottom:none;}
+.issue-num{font-size:11px;font-weight:700;color:#e8a020;min-width:22px;padding-top:2px;}
+.issue-body{flex:1;}
+.issue-text{font-size:13px;line-height:1.4;margin-bottom:4px;}
+.issue-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px;}
+.tag{font-size:10px;padding:2px 7px;border-radius:3px;font-weight:600;}
+.tag-trade{background:#e8f0ff;color:#1a3a8a;border:1px solid #b0c0f0;}
+.tag-co{background:#f0fff0;color:#1a5a1a;border:1px solid #a0d0a0;}
+.tag-synced{background:#e8f8f0;color:#0a6040;border:1px solid #80c8a8;}
+.tag-pending{background:#fff8e8;color:#7a4a00;border:1px solid #e0c070;}
+.tag-wishlist{background:#fff0f8;color:#7a0060;border:1px solid #e0a0d0;}
+.photo-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;}
+.photo-thumb-wrap{position:relative;}
+.photo-thumb{width:56px;height:56px;object-fit:cover;border-radius:4px;border:1.5px solid #ccc;cursor:pointer;display:block;}
+.photo-thumb:hover{opacity:.82;}
+.photo-del{position:absolute;top:-5px;right:-5px;background:#c00;color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;cursor:pointer;font-weight:700;padding:0;}
+.issue-actions{display:flex;gap:3px;flex-direction:column;align-items:flex-end;}
+.btn-resolve{background:#f0fff5;border:1px solid #40a870;color:#006630;font-size:11px;padding:3px 7px;cursor:pointer;border-radius:3px;font-weight:600;}
+.btn-resolve:hover{background:#40a870;color:#fff;}
+.btn-del{background:#fff5f5;border:1px solid #e0a0a0;color:#c00;font-size:11px;padding:3px 7px;cursor:pointer;border-radius:3px;}
+.btn-del:hover{background:#c00;color:#fff;}
+.btn-sync-one{background:#e8f4ff;border:1px solid #5090d0;color:#0a3a8a;font-size:11px;padding:3px 7px;cursor:pointer;border-radius:3px;font-weight:600;}
+.btn-sync-one:hover{background:#0e6fb5;color:#fff;}
+.btn-edit{background:#f5f0ff;border:1px solid #9070c0;color:#4a1a8a;font-size:11px;padding:3px 7px;cursor:pointer;border-radius:3px;font-weight:600;}
+.btn-edit:hover{background:#6030a0;color:#fff;}
+.edit-field{width:100%;padding:6px 8px;font-size:12px;border:1.5px solid #7090d0;border-radius:4px;outline:none;resize:vertical;font-family:inherit;margin-bottom:5px;}
+.edit-row{display:flex;gap:5px;margin-bottom:6px;flex-wrap:wrap;}
+.edit-sel{flex:1;min-width:110px;padding:5px 6px;font-size:12px;border:1.5px solid #7090d0;border-radius:4px;background:#fff;outline:none;}
+.btn-save-edit{background:#1c2b3a;color:#fff;border:none;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;border-radius:3px;}
+.btn-save-edit:hover{background:#e8a020;color:#1c2b3a;}
+.btn-cancel-edit{background:#f5f5f5;color:#555;border:1px solid #ccc;padding:5px 10px;font-size:11px;cursor:pointer;border-radius:3px;}
+/* Modals */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;align-items:flex-start;justify-content:center;padding-top:30px;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#fff;border-radius:10px;width:96%;max-width:560px;overflow:hidden;margin-bottom:30px;}
+.modal-hdr{background:#1c2b3a;color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;}
+.modal-hdr h2{font-size:15px;font-weight:700;margin:0;}
+.modal-body{padding:18px;max-height:70vh;overflow-y:auto;}
+.modal-footer{padding:11px 18px;background:#f5f5f5;border-top:1px solid #ddd;display:flex;gap:8px;justify-content:flex-end;}
+.modal-section{margin-bottom:16px;}
+.modal-section h3{font-size:11px;font-weight:700;color:#1c2b3a;margin:0 0 7px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1.5px solid #e8a020;padding-bottom:4px;}
+.setup-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap;}
+.setup-label{font-size:12px;font-weight:600;color:#444;min-width:140px;}
+.setup-input{flex:1;padding:6px 9px;font-size:12px;border:1.5px solid #ccc;border-radius:4px;outline:none;font-family:monospace;}
+.setup-select{flex:1;padding:6px 9px;font-size:12px;border:1.5px solid #ccc;border-radius:4px;background:#fff;outline:none;}
+.setup-note{font-size:11px;color:#888;font-style:italic;margin-top:4px;}
+.company-row{display:flex;align-items:center;gap:8px;padding:6px 9px;background:#f8f9fa;border-radius:4px;border:1px solid #e0e0e0;margin-bottom:5px;}
+.co-name{flex:1;font-size:12px;font-weight:600;color:#1c2b3a;}
+.co-email{font-size:11px;color:#888;}
+.toggle-btn{font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:3px;cursor:pointer;background:#fff;}
+.toggle-btn.active{background:#1c2b3a;color:#fff;border-color:#1c2b3a;}
+/* Bed type picker */
+#bed-picker{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:none;align-items:center;justify-content:center;}
+#bed-picker.open{display:flex;}
+.bed-box{background:#fff;border-radius:10px;padding:24px;max-width:320px;width:92%;text-align:center;}
+.bed-box h3{font-size:15px;font-weight:700;color:#1c2b3a;margin-bottom:6px;}
+.bed-box p{font-size:12px;color:#666;margin-bottom:18px;}
+.bed-options{display:flex;gap:12px;justify-content:center;}
+.bed-opt{flex:1;padding:16px 12px;border:2px solid #b0c4e0;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700;color:#1c2b3a;background:#f5f8ff;transition:all .15s;}
+.bed-opt:hover{border-color:#e8a020;background:#fff3e0;}
+/* Sync modal */
+.sync-log{background:#1c2b3a;border-radius:5px;padding:10px;font-family:monospace;font-size:12px;max-height:200px;overflow-y:auto;color:#9fb3c8;line-height:1.8;}
+.log-ok{color:#4caf80;}
+.log-err{color:#f06060;}
+.log-inf{color:#9fb3c8;}
+.prog-wrap{background:#ddd;border-radius:4px;height:7px;margin:8px 0;overflow:hidden;}
+.prog-bar{height:100%;background:linear-gradient(90deg,#0e6fb5,#4caf80);border-radius:4px;transition:width .4s;}
+/* Lightbox */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;align-items:center;justify-content:center;}
+.lightbox.open{display:flex;}
+.lightbox img{max-width:94vw;max-height:90vh;border-radius:6px;}
+.lb-close{position:fixed;top:14px;right:18px;color:#fff;font-size:32px;cursor:pointer;font-weight:300;z-index:10000;line-height:1;}
+/* Resolved items */
+.issue-item.resolved{opacity:.55;}
+.issue-item.resolved .issue-text{text-decoration:line-through;}
+/* Dot indicator */
+.dot-placed{display:inline-block;width:10px;height:10px;border-radius:50%;background:#e8a020;border:2px solid #1c2b3a;margin-right:4px;vertical-align:middle;}
+/* Export row */
+.export-row{display:flex;gap:0;}
+.export-sel{padding:7px 9px;font-size:12px;border:1px solid #3a4f63;border-radius:4px 0 0 4px;background:#253547;color:#fff;cursor:pointer;outline:none;}
+.export-sel option{background:#253547;}
+/* Mobile */
+@media(max-width:600px){.hdr{padding:10px 12px;}.content{padding:10px 12px;}.stats{padding:5px 12px;}.floor-tabs{padding:0 12px;}}
+/* Install banner */
+.install-banner{display:none;background:#253547;border-bottom:2px solid #e8a020;padding:9px 16px;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.install-banner.visible{display:flex;}
+.install-banner-text{font-size:12px;color:#c8d8e8;line-height:1.4;}
+.install-banner-text strong{color:#fff;}
+.install-banner-btns{display:flex;gap:6px;flex-shrink:0;}
+/* Offline bar */
+.offline-bar{display:none;background:#c00;color:#fff;text-align:center;font-size:12px;font-weight:600;padding:5px 12px;}
+.offline-bar.visible{display:block;}
+</style>
+</head>
+<body>
+
+<div class="offline-bar" id="offline-bar">⚠ Offline — punch items save locally. Sync available when back online.</div>
+<div class="install-banner" id="install-banner">
+  <div class="install-banner-text"><strong>Add to Home Screen</strong> — install this app on your device to use offline in the field</div>
+  <div class="install-banner-btns">
+    <button class="btn btn-orange btn-sm" onclick="installPwa()">Install App</button>
+    <button class="btn btn-ghost btn-sm" onclick="dismissInstall()">Not now</button>
+  </div>
+</div>
+<div class="hdr">
+  <div><h1>Harris Punch Walk</h1><div class="sub" id="hdr-project">Harris Associates</div></div>
+  <div class="hdr-right">
+    <div id="user-chip" style="display:none;align-items:center;gap:6px;font-size:11px;color:#9fb3c8;">
+      <span>&#128100;</span><span id="user-name" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+      <button class="btn btn-ghost btn-sm" onclick="logout()" style="font-size:10px;padding:4px 7px;">Logout</button>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="openSettings()">&#9881; Setup</button>
+    <div class="export-row">
+      <select id="export-fmt" class="export-sel">
+        <option value="txt">Text (.txt)</option>
+        <option value="csv">CSV (.csv)</option>
+        <option value="pdf">PDF w/ Photos</option>
+      </select>
+      <button class="btn btn-orange btn-sm" style="border-radius:0 4px 4px 0" onclick="doExport()">Export</button>
+    </div>
+    <button class="btn btn-green btn-sm" onclick="exportPhotosZip()">&#128247; Photos ZIP</button>
+    <button class="btn btn-blue btn-sm" onclick="openSyncModal()">&#8593; Sync Forma</button>
+  </div>
+</div>
+
+<div class="stats" id="stats-bar">
+  <div class="stat"><strong id="s-rooms">0</strong> rooms</div>
+  <div class="stat"><strong id="s-total">0</strong> items</div>
+  <div class="stat"><strong id="s-open">0</strong> open</div>
+  <div class="stat"><strong id="s-res">0</strong> resolved</div>
+  <div class="stat stat-syn"><strong id="s-syn">0</strong> synced</div>
+  <div class="stat"><strong id="s-pend">0</strong> pending</div>
+</div>
+
+<div class="floor-tabs" id="floor-tabs"></div>
+
+<div class="content" id="main-content">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+    <div class="view-toggle">
+      <button class="view-btn active" id="btn-grid" onclick="setView('grid')">&#9783; Grid</button>
+      <button class="view-btn" id="btn-map" onclick="setView('map')">&#9776; Map</button>
+    </div>
+    <div style="font-size:11px;color:#666;" id="floor-label-display"></div>
+  </div>
+
+  <!-- Grid view -->
+  <div id="grid-section">
+    <div class="legend">
+      <span><span class="leg-dot" style="background:#d0dff5;border:1.5px solid #b0c4e0;"></span>Regular</span>
+      <span><span class="leg-dot" style="background:#fff3d0;border:1.5px solid #d4b04a;"></span>ADA</span>
+      <span><span class="leg-dot" style="background:#d0eaff;border:1.5px solid #5a9fd4;"></span>Corner Suite</span>
+      <span><span class="leg-dot" style="background:#d0ffe8;border:1.5px solid #40a870;"></span>Pool Suite</span>
+      <span style="margin-left:auto"><span style="background:#4caf80;width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:3px;vertical-align:middle;"></span>All synced</span>
+    </div>
+    <div class="area-row" id="area-row"></div>
+    <div class="room-grid" id="room-grid"></div>
+  </div>
+
+  <!-- Map view -->
+  <div id="map-section">
+    <div class="map-hint">Pinch/scroll to zoom &amp; pan. Tap a dot to view issue. Tap empty space to add issue at that location.</div>
+    <div class="map-wrap" id="map-wrap">
+      <div class="map-img-inner" id="map-img-inner">
+        <img id="map-img" src="" alt="Floor plan" onerror="this.style.display='none';document.getElementById('map-placeholder').style.display='block'">
+        <canvas id="map-canvas"></canvas>
+        <div id="map-placeholder" style="display:none;padding:60px 20px;text-align:center;color:#888;font-size:13px;font-style:italic;">Floor plan image not configured.<br>Place images in ./floor-plans/complete/ and set path in Setup.</div>
+      </div>
+    </div>
+    <div class="area-row" id="map-area-row"></div>
+  </div>
+</div>
+
+<!-- ROOM PANEL -->
+<div id="room-panel">
+  <div class="panel-hdr">
+    <div>
+      <div class="panel-room-num" id="panel-num">—</div>
+      <div class="panel-sub" id="panel-sub"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;">
+      <span class="panel-tag" id="panel-tag"></span>
+      <button class="btn btn-ghost btn-sm" onclick="closePanel()">Close &#10005;</button>
+    </div>
+  </div>
+
+  <!-- Floor plan dot placement -->
+  <div class="fp-wrap" id="fp-wrap">
+    <div class="fp-inner" id="fp-inner">
+      <img id="panel-fp-img" src="" alt="Room plan" onerror="handleFpError()">
+      <canvas id="panel-fp-canvas"></canvas>
+    </div>
+    <div class="fp-hint" id="fp-hint">Tap floor plan to mark issue location</div>
+  </div>
+
+  <!-- Add issue form -->
+  <div class="issue-form">
+    <div class="form-row">
+      <input class="form-input" id="issue-desc" type="text" placeholder="Describe punch item…" maxlength="400" onkeydown="if(event.key==='Enter')submitIssue()">
+      <button class="btn-add-issue" onclick="submitIssue()">Add</button>
+    </div>
+    <div class="form-row">
+      <select class="form-select" id="issue-trade" onchange="onTradeChange(this.value)">
+        <option value="">— Select Trade —</option>
+      </select>
+      <div class="co-lock" id="issue-co-display"><span class="co-lock-icon">🔒</span><span id="issue-co-name">Select a trade first</span></div>
+    </div>
+    <div class="photo-strip" id="pending-photos-row">
+      <button class="btn-photo" onclick="addPhoto(null)">&#128247; Add Photo</button>
+      <div id="pending-thumbs"></div>
+    </div>
+    <div style="font-size:11px;color:#888;margin-top:4px;" id="dot-status">Location: not placed — tap plan above</div>
+  </div>
+
+  <!-- Issue list -->
+  <div class="issue-list" id="issue-list"></div>
+</div>
+
+<!-- BED TYPE PICKER -->
+<div id="bed-picker">
+  <div class="bed-box">
+    <h3>Room Type</h3>
+    <p>Select bed configuration for this room:</p>
+    <div class="bed-options">
+      <div class="bed-opt" onclick="pickBed('king')">&#128702; King</div>
+      <div class="bed-opt" onclick="pickBed('double')">&#128716; Double</div>
+    </div>
+    <div style="margin-top:12px;">
+      <button class="btn btn-ghost btn-sm" onclick="closeBedPicker()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal-box">
+    <div class="modal-hdr"><h2>&#9881; Setup &amp; Configuration</h2><button class="btn btn-ghost btn-sm" onclick="closeSettings()">&#10005;</button></div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <h3>Autodesk Account</h3>
+        <div id="auth-settings-status" style="font-size:12px;color:#555;margin-bottom:8px;">Checking…</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-blue btn-sm" id="auth-settings-btn" onclick="handleAuthSettingsBtn()">Login with Autodesk</button>
+        </div>
+        <div class="setup-note" style="margin-top:6px;">You are redirected to Autodesk's login page. This app never handles your password. Sessions last 30 days.</div>
+      </div>
+      <div class="modal-section">
+        <h3>ACC Project</h3>
+        <div id="active-project-display" style="padding:8px 10px;border-radius:4px;font-size:12px;margin-bottom:8px;background:#f0fff4;border:1.5px solid #80c8a0;color:#1a5a2a;display:none;">
+          <strong id="active-project-name"></strong><br>
+          <span id="active-project-id" style="font-size:10px;font-family:monospace;color:#555;"></span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+          <button class="btn btn-blue btn-sm" onclick="loadProjectList()">&#8635; Load My Projects</button>
+          <span id="project-load-status" style="font-size:11px;color:#888;"></span>
+        </div>
+        <select id="project-select" class="setup-select" style="width:100%;margin-bottom:8px;display:none;" onchange="onProjectSelectChange(this.value)">
+          <option value="">— Select a project —</option>
+        </select>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-orange btn-sm" id="btn-use-project" style="display:none;" onclick="confirmProjectSelection()">Use This Project</button>
+          <button class="btn btn-blue btn-sm" id="btn-load-acc-data" onclick="fetchAccProjectData()" style="display:none;">&#8635; Load Members &amp; Companies</button>
+          <span id="acc-fetch-status" style="font-size:11px;color:#888;"></span>
+        </div>
+      </div>
+      <div class="modal-section">
+        <h3>Floor Plan Image Paths</h3>
+        <div class="setup-note" style="margin-bottom:8px;">Base folder for complete floor plans (relative to this HTML file). E.g. <code>./floor-plans/complete/</code></div>
+        <input type="text" class="setup-input" id="cfg-fp-base" style="width:100%;" placeholder="./floor-plans/complete/">
+        <div class="setup-note" style="margin-top:4px;">Files expected: <code>1st Floor.png</code> through <code>9th Floor.png</code></div>
+      </div>
+      <div class="modal-section">
+        <h3>Auto-Download Photos</h3>
+        <div class="setup-row">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+            <input type="checkbox" id="cfg-auto-dl" style="width:16px;height:16px;">
+            Save each photo to device when captured (Downloads/DCIM)
+          </label>
+        </div>
+        <div class="setup-note">Prevents photo loss if app data is cleared. Photos also saved in app storage (IndexedDB).</div>
+      </div>
+      <div class="modal-section">
+        <h3>Issue Types &amp; Default Companies</h3>
+        <div id="trade-cfg-rows"></div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #ddd;">
+          <div style="font-size:11px;font-weight:700;color:#1c2b3a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;">Add Custom Issue Type</div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;">
+            <input type="text" id="new-trade-label" placeholder="Issue type name…" class="setup-input" style="flex:1;min-width:150px;">
+            <select id="new-trade-co" class="setup-select" style="flex:1;min-width:130px;"><option value="">— Company —</option></select>
+            <button class="btn btn-orange btn-sm" onclick="addCustomTrade()">+ Add</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-section">
+        <h3>Issue Watchers (Project Team)</h3>
+        <div id="watcher-rows"></div>
+        <div class="setup-note">Selected members are added as watchers on every issue pushed to Forma. Roles are fetched from ACC.</div>
+      </div>
+      <div class="modal-section">
+        <h3>Active Companies</h3>
+        <div id="company-rows"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeSettings()">Cancel</button>
+      <button class="btn btn-orange" onclick="saveSettings()">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- SYNC MODAL -->
+<div class="modal-overlay" id="sync-modal">
+  <div class="modal-box">
+    <div class="modal-hdr"><h2>&#8593; Push to ACC Forma</h2><button class="btn btn-ghost btn-sm" onclick="closeSyncModal()">&#10005;</button></div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <h3>Sync Summary</h3>
+        <div id="sync-summary" style="font-size:13px;margin-bottom:7px;"></div>
+        <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+      </div>
+      <div class="modal-section"><h3>Log</h3><div class="sync-log" id="sync-log">Ready.</div></div>
+      <div id="no-token-note" style="display:none;background:#fff8f0;border:1.5px solid #e8a020;border-radius:6px;padding:11px;font-size:12px;color:#7a4000;margin-top:8px;">
+        <strong>Not logged in.</strong> Close this and log in with Autodesk, then return to sync.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="copySyncPayload()">&#128203; Copy Payload</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeSyncModal()">Close</button>
+      <button class="btn btn-blue" id="sync-btn" onclick="startSync()">Start Sync</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <span class="lb-close" onclick="closeLightbox()">&#10005;</span>
+  <img id="lb-img" src="" alt="Photo" onclick="event.stopPropagation()">
+</div>
+
+<!-- AUTH OVERLAY -->
+<div id="auth-overlay" style="display:none;position:fixed;inset:0;background:#1c2b3a;z-index:10000;flex-direction:column;align-items:center;justify-content:center;padding:30px;">
+  <div style="max-width:380px;width:100%;text-align:center;">
+    <div style="font-size:48px;margin-bottom:14px;">📋</div>
+    <div style="font-size:11px;font-weight:700;color:#e8a020;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">Harris Associates</div>
+    <h1 style="color:#fff;font-size:26px;font-weight:700;margin:0 0 8px;line-height:1.2;">Harris Punch Walk</h1>
+    <div style="color:#6a8aa8;font-size:13px;margin-bottom:32px;">ACC Forma field tool for project punch lists</div>
+    <button id="login-btn" onclick="loginWithAutodesk()" style="width:100%;padding:15px;background:#e8a020;color:#1c2b3a;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px;transition:opacity .15s;">Login with Autodesk</button>
+    <div id="auth-status" style="color:#9fb3c8;font-size:12px;min-height:18px;"></div>
+    <div style="margin-top:28px;padding-top:20px;border-top:1px solid #253547;color:#465a6e;font-size:11px;line-height:1.6;">Your Autodesk credentials are used directly.<br>2-factor authentication is supported. Sessions last 30 days.</div>
+  </div>
+</div>
+
+<input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoFile(event)">
+
+<script>
+'use strict';
+// ─── MiniZip (offline-capable ZIP builder) ───────────────────────────────────
+const MiniZip=(()=>{
+  function u16(n){return[n&0xFF,(n>>8)&0xFF];}
+  function u32(n){return[n&0xFF,(n>>8)&0xFF,(n>>16)&0xFF,(n>>24)&0xFF];}
+  function crc32(b){let c=0xFFFFFFFF;const t=new Uint32Array(256);for(let i=0;i<256;i++){let x=i;for(let j=0;j<8;j++)x=x&1?(0xEDB88320^(x>>>1)):x>>>1;t[i]=x;}for(let i=0;i<b.length;i++)c=t[(c^b[i])&0xFF]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
+  function se(s){return new TextEncoder().encode(s);}
+  function cat(...a){const l=a.map(x=>x.length),t=l.reduce((a,b)=>a+b,0),o=new Uint8Array(t);let off=0;a.forEach(x=>{o.set(x,off);off+=x.length;});return o;}
+  return{create(){const entries=[];return{
+    addBytes(name,bytes){entries.push({name,bytes});},
+    async toBlob(){
+      const lh=[],cd=[];let offset=0;
+      for(const e of entries){
+        const nb=se(e.name),data=e.bytes instanceof Uint8Array?e.bytes:new Uint8Array(e.bytes);
+        const crc=crc32(data),sz=data.length;
+        const h=new Uint8Array([0x50,0x4B,0x03,0x04,0x14,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,...u32(crc),...u32(sz),...u32(sz),...u16(nb.length),0x00,0x00,...nb]);
+        lh.push(cat(h,data));
+        cd.push(new Uint8Array([0x50,0x4B,0x01,0x02,0x14,0x00,0x14,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,...u32(crc),...u32(sz),...u32(sz),...u16(nb.length),0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,...u32(offset),...nb]));
+        offset+=h.length+sz;
+      }
+      const cds=cat(...cd);
+      const eocd=new Uint8Array([0x50,0x4B,0x05,0x06,0x00,0x00,0x00,0x00,...u16(entries.length),...u16(entries.length),...u32(cds.length),...u32(offset),0x00,0x00]);
+      return new Blob([cat(...lh,cds,eocd)],{type:'application/zip'});
+    }
+  };}};
+})();
+
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+const FLOOR_KEYS=['1st','2nd','3rd','4th','5th','6th','7th','8th','9th'];
+const FLOOR_PLAN_NAMES={'1st':'1st Floor.png','2nd':'2nd Floor.png','3rd':'3rd Floor.png','4th':'4th Floor.png','5th':'5th Floor.png','6th':'6th Floor.png','7th':'7th Floor.png','8th':'8th Floor.png','9th':'9th Floor.png'};
+
+const ROOMS={"1st":[{"num":1002,"type":"Regular"},{"num":1004,"type":"ADA"},{"num":1006,"type":"Regular"},{"num":1007,"type":"Regular"},{"num":1009,"type":"Regular"},{"num":1010,"type":"ADA Pool Suite"},{"num":1011,"type":"Regular"},{"num":1012,"type":"Regular"},{"num":1014,"type":"Corner Suite"},{"num":1015,"type":"Regular"},{"num":1017,"type":"Regular"},{"num":1019,"type":"Regular"},{"num":1021,"type":"Regular"},{"num":1022,"type":"Pool Suite"},{"num":1023,"type":"Regular"},{"num":1024,"type":"Regular"},{"num":1025,"type":"Regular"},{"num":1026,"type":"Regular"},{"num":1027,"type":"ADA"},{"num":1029,"type":"Regular"},{"num":1030,"type":"Pool Suite"},{"num":1032,"type":"Regular"},{"num":1034,"type":"Regular"},{"num":1035,"type":"Regular"},{"num":1037,"type":"Regular"},{"num":1038,"type":"Pool Suite"},{"num":1039,"type":"Regular"},{"num":1040,"type":"Regular"},{"num":1041,"type":"Regular"},{"num":1042,"type":"Regular"},{"num":1043,"type":"Regular"},{"num":1045,"type":"Regular"},{"num":1046,"type":"Corner Suite"},{"num":1047,"type":"Regular"},{"num":1049,"type":"Regular"},{"num":1050,"type":"Regular"},{"num":1051,"type":"Regular"},{"num":1053,"type":"Regular"},{"num":1054,"type":"Pool Suite"},{"num":1055,"type":"Regular"},{"num":1056,"type":"Regular"},{"num":1057,"type":"Regular"},{"num":1058,"type":"Regular"},{"num":1059,"type":"Regular"},{"num":1061,"type":"Regular"},{"num":1062,"type":"Pool Suite"},{"num":1063,"type":"Regular"},{"num":1064,"type":"Regular"}],"2nd":[{"num":2002,"type":"Regular"},{"num":2003,"type":"Regular"},{"num":2004,"type":"Regular"},{"num":2005,"type":"Regular"},{"num":2006,"type":"Regular"},{"num":2007,"type":"Regular"},{"num":2008,"type":"ADA"},{"num":2009,"type":"Regular"},{"num":2010,"type":"Regular"},{"num":2011,"type":"Regular"},{"num":2012,"type":"Regular"},{"num":2014,"type":"Corner Suite"},{"num":2015,"type":"Regular"},{"num":2017,"type":"Regular"},{"num":2019,"type":"Regular"},{"num":2020,"type":"Regular"},{"num":2021,"type":"Regular"},{"num":2022,"type":"Regular"},{"num":2023,"type":"Regular"},{"num":2024,"type":"Regular"},{"num":2025,"type":"Regular"},{"num":2026,"type":"Regular"},{"num":2027,"type":"ADA"},{"num":2028,"type":"Regular"},{"num":2029,"type":"Regular"},{"num":2030,"type":"Regular"},{"num":2031,"type":"Regular"},{"num":2032,"type":"Regular"},{"num":2033,"type":"Regular"},{"num":2034,"type":"Regular"},{"num":2035,"type":"Regular"},{"num":2036,"type":"Regular"},{"num":2037,"type":"Regular"},{"num":2038,"type":"Regular"},{"num":2039,"type":"Regular"},{"num":2040,"type":"Regular"},{"num":2041,"type":"Regular"},{"num":2042,"type":"Regular"},{"num":2043,"type":"Regular"},{"num":2045,"type":"Regular"},{"num":2046,"type":"Corner Suite"},{"num":2047,"type":"Regular"},{"num":2049,"type":"Regular"},{"num":2050,"type":"Regular"},{"num":2051,"type":"Regular"},{"num":2052,"type":"Regular"},{"num":2053,"type":"Regular"},{"num":2054,"type":"Regular"},{"num":2055,"type":"Regular"},{"num":2056,"type":"Regular"},{"num":2057,"type":"Regular"},{"num":2058,"type":"Regular"},{"num":2059,"type":"Regular"},{"num":2060,"type":"Regular"},{"num":2061,"type":"Regular"},{"num":2062,"type":"Regular"},{"num":2063,"type":"Regular"},{"num":2064,"type":"Regular"}],"3rd":[{"num":3002,"type":"Regular"},{"num":3003,"type":"Regular"},{"num":3004,"type":"Regular"},{"num":3005,"type":"Regular"},{"num":3006,"type":"Regular"},{"num":3007,"type":"Regular"},{"num":3008,"type":"ADA"},{"num":3009,"type":"Regular"},{"num":3010,"type":"Regular"},{"num":3011,"type":"Regular"},{"num":3012,"type":"Regular"},{"num":3014,"type":"Corner Suite"},{"num":3015,"type":"Regular"},{"num":3017,"type":"Regular"},{"num":3019,"type":"Regular"},{"num":3020,"type":"Regular"},{"num":3021,"type":"Regular"},{"num":3022,"type":"Regular"},{"num":3023,"type":"Regular"},{"num":3024,"type":"Regular"},{"num":3025,"type":"Regular"},{"num":3026,"type":"Regular"},{"num":3027,"type":"ADA"},{"num":3028,"type":"Regular"},{"num":3029,"type":"Regular"},{"num":3030,"type":"Regular"},{"num":3031,"type":"Regular"},{"num":3032,"type":"Regular"},{"num":3033,"type":"Regular"},{"num":3034,"type":"Regular"},{"num":3035,"type":"Regular"},{"num":3036,"type":"Regular"},{"num":3037,"type":"Regular"},{"num":3038,"type":"Regular"},{"num":3039,"type":"Regular"},{"num":3040,"type":"Regular"},{"num":3041,"type":"Regular"},{"num":3042,"type":"Regular"},{"num":3043,"type":"Regular"},{"num":3045,"type":"Regular"},{"num":3046,"type":"Corner Suite"},{"num":3047,"type":"Regular"},{"num":3049,"type":"Regular"},{"num":3050,"type":"Regular"},{"num":3051,"type":"Regular"},{"num":3052,"type":"Regular"},{"num":3053,"type":"Regular"},{"num":3054,"type":"Regular"},{"num":3055,"type":"Regular"},{"num":3056,"type":"Regular"},{"num":3057,"type":"Regular"},{"num":3058,"type":"Regular"},{"num":3059,"type":"Regular"},{"num":3060,"type":"Regular"},{"num":3061,"type":"Regular"},{"num":3062,"type":"Regular"},{"num":3063,"type":"Regular"},{"num":3064,"type":"Regular"}],"4th":[{"num":4002,"type":"Regular"},{"num":4003,"type":"Regular"},{"num":4004,"type":"Regular"},{"num":4005,"type":"Regular"},{"num":4006,"type":"Regular"},{"num":4007,"type":"Regular"},{"num":4008,"type":"ADA"},{"num":4009,"type":"Regular"},{"num":4010,"type":"Regular"},{"num":4011,"type":"Regular"},{"num":4012,"type":"Regular"},{"num":4014,"type":"Corner Suite"},{"num":4015,"type":"Regular"},{"num":4017,"type":"Regular"},{"num":4019,"type":"Regular"},{"num":4020,"type":"Regular"},{"num":4021,"type":"Regular"},{"num":4022,"type":"Regular"},{"num":4023,"type":"Regular"},{"num":4024,"type":"Regular"},{"num":4025,"type":"Regular"},{"num":4026,"type":"Regular"},{"num":4027,"type":"Regular"},{"num":4028,"type":"Regular"},{"num":4029,"type":"Regular"},{"num":4030,"type":"Regular"},{"num":4031,"type":"Regular"},{"num":4032,"type":"Regular"},{"num":4033,"type":"Regular"},{"num":4034,"type":"Regular"},{"num":4035,"type":"Regular"},{"num":4036,"type":"Regular"},{"num":4037,"type":"Regular"},{"num":4038,"type":"Regular"},{"num":4039,"type":"Regular"},{"num":4040,"type":"Regular"},{"num":4041,"type":"Regular"},{"num":4042,"type":"Regular"},{"num":4046,"type":"Corner Suite"},{"num":4049,"type":"Regular"},{"num":4050,"type":"Regular"},{"num":4051,"type":"Regular"},{"num":4052,"type":"Regular"},{"num":4053,"type":"Regular"},{"num":4054,"type":"Regular"},{"num":4055,"type":"Regular"},{"num":4056,"type":"Regular"},{"num":4057,"type":"Regular"},{"num":4058,"type":"Regular"},{"num":4059,"type":"Regular"},{"num":4060,"type":"Regular"},{"num":4061,"type":"Regular"},{"num":4062,"type":"Regular"},{"num":4063,"type":"Regular"},{"num":4064,"type":"Regular"}],"5th":[{"num":5002,"type":"Regular"},{"num":5003,"type":"Regular"},{"num":5004,"type":"Regular"},{"num":5005,"type":"Regular"},{"num":5006,"type":"Regular"},{"num":5007,"type":"Regular"},{"num":5008,"type":"ADA"},{"num":5009,"type":"Regular"},{"num":5010,"type":"Regular"},{"num":5011,"type":"Regular"},{"num":5012,"type":"Regular"},{"num":5014,"type":"Corner Suite"},{"num":5015,"type":"Regular"},{"num":5017,"type":"Regular"},{"num":5019,"type":"Regular"},{"num":5020,"type":"Regular"},{"num":5021,"type":"Regular"},{"num":5022,"type":"Regular"},{"num":5023,"type":"Regular"},{"num":5024,"type":"Regular"},{"num":5025,"type":"Regular"},{"num":5026,"type":"Regular"},{"num":5027,"type":"Regular"},{"num":5028,"type":"Regular"},{"num":5029,"type":"Regular"},{"num":5030,"type":"Regular"},{"num":5031,"type":"Regular"},{"num":5032,"type":"Regular"},{"num":5033,"type":"Regular"},{"num":5034,"type":"Regular"},{"num":5035,"type":"Regular"},{"num":5036,"type":"Regular"},{"num":5037,"type":"Regular"},{"num":5038,"type":"Regular"},{"num":5039,"type":"Regular"},{"num":5040,"type":"Regular"},{"num":5042,"type":"Regular"},{"num":5046,"type":"Corner Suite"},{"num":5049,"type":"Regular"},{"num":5050,"type":"Regular"},{"num":5051,"type":"Regular"},{"num":5052,"type":"Regular"},{"num":5053,"type":"Regular"},{"num":5054,"type":"Regular"},{"num":5055,"type":"Regular"},{"num":5056,"type":"Regular"},{"num":5057,"type":"Regular"},{"num":5058,"type":"Regular"},{"num":5059,"type":"Regular"},{"num":5060,"type":"Regular"},{"num":5061,"type":"Regular"},{"num":5062,"type":"Regular"},{"num":5063,"type":"Regular"},{"num":5064,"type":"Regular"}],"6th":[{"num":6002,"type":"Regular"},{"num":6003,"type":"Regular"},{"num":6004,"type":"Regular"},{"num":6005,"type":"Regular"},{"num":6006,"type":"Regular"},{"num":6007,"type":"Regular"},{"num":6008,"type":"ADA"},{"num":6009,"type":"Regular"},{"num":6010,"type":"Regular"},{"num":6011,"type":"Regular"},{"num":6012,"type":"Regular"},{"num":6014,"type":"Corner Suite"},{"num":6015,"type":"Regular"},{"num":6017,"type":"Regular"},{"num":6019,"type":"Regular"},{"num":6020,"type":"Regular"},{"num":6021,"type":"Regular"},{"num":6022,"type":"Regular"},{"num":6023,"type":"Regular"},{"num":6024,"type":"Regular"},{"num":6025,"type":"Regular"},{"num":6026,"type":"Regular"},{"num":6027,"type":"Regular"},{"num":6028,"type":"Regular"},{"num":6029,"type":"Regular"},{"num":6030,"type":"Regular"},{"num":6031,"type":"Regular"},{"num":6032,"type":"Regular"},{"num":6033,"type":"Regular"},{"num":6034,"type":"Regular"},{"num":6035,"type":"Regular"},{"num":6036,"type":"Regular"},{"num":6037,"type":"Regular"},{"num":6038,"type":"Regular"},{"num":6039,"type":"Regular"},{"num":6040,"type":"Regular"},{"num":6042,"type":"Regular"},{"num":6046,"type":"Corner Suite"},{"num":6049,"type":"Regular"},{"num":6050,"type":"Regular"},{"num":6051,"type":"Regular"},{"num":6052,"type":"Regular"},{"num":6053,"type":"Regular"},{"num":6054,"type":"Regular"},{"num":6055,"type":"Regular"},{"num":6056,"type":"Regular"},{"num":6057,"type":"Regular"},{"num":6058,"type":"Regular"},{"num":6059,"type":"Regular"},{"num":6060,"type":"Regular"},{"num":6061,"type":"Regular"},{"num":6062,"type":"Regular"},{"num":6063,"type":"Regular"},{"num":6064,"type":"Regular"}],"7th":[{"num":7002,"type":"Regular"},{"num":7003,"type":"Regular"},{"num":7004,"type":"Regular"},{"num":7005,"type":"Regular"},{"num":7006,"type":"Regular"},{"num":7007,"type":"Regular"},{"num":7008,"type":"ADA"},{"num":7009,"type":"Regular"},{"num":7010,"type":"Regular"},{"num":7011,"type":"Regular"},{"num":7012,"type":"Regular"},{"num":7014,"type":"Corner Suite"},{"num":7015,"type":"Regular"},{"num":7017,"type":"Regular"},{"num":7019,"type":"Regular"},{"num":7020,"type":"Regular"},{"num":7021,"type":"Regular"},{"num":7022,"type":"Regular"},{"num":7023,"type":"Regular"},{"num":7024,"type":"Regular"},{"num":7025,"type":"Regular"},{"num":7026,"type":"Regular"},{"num":7027,"type":"Regular"},{"num":7028,"type":"Regular"},{"num":7029,"type":"Regular"},{"num":7030,"type":"Regular"},{"num":7031,"type":"Regular"},{"num":7032,"type":"Regular"},{"num":7033,"type":"Regular"},{"num":7034,"type":"Regular"},{"num":7035,"type":"Regular"},{"num":7036,"type":"Regular"},{"num":7037,"type":"Regular"},{"num":7038,"type":"Regular"},{"num":7039,"type":"Regular"},{"num":7040,"type":"Regular"},{"num":7042,"type":"Regular"},{"num":7046,"type":"Corner Suite"},{"num":7050,"type":"Regular"},{"num":7051,"type":"Regular"},{"num":7052,"type":"Regular"},{"num":7053,"type":"Regular"},{"num":7054,"type":"Regular"},{"num":7055,"type":"Regular"},{"num":7056,"type":"Regular"},{"num":7057,"type":"Regular"},{"num":7058,"type":"Regular"},{"num":7059,"type":"Regular"},{"num":7060,"type":"Regular"},{"num":7061,"type":"Regular"},{"num":7063,"type":"Regular"}],"8th":[{"num":8002,"type":"Regular"},{"num":8003,"type":"Regular"},{"num":8004,"type":"Regular"},{"num":8005,"type":"Regular"},{"num":8006,"type":"Regular"},{"num":8007,"type":"Regular"},{"num":8008,"type":"ADA"},{"num":8009,"type":"Regular"},{"num":8010,"type":"Regular"},{"num":8011,"type":"Regular"},{"num":8012,"type":"Regular"},{"num":8014,"type":"Corner Suite"},{"num":8015,"type":"Regular"},{"num":8020,"type":"Regular"},{"num":8022,"type":"Regular"},{"num":8023,"type":"Regular"},{"num":8024,"type":"Regular"},{"num":8025,"type":"Regular"},{"num":8026,"type":"Regular"},{"num":8027,"type":"Regular"},{"num":8028,"type":"Regular"},{"num":8029,"type":"Regular"},{"num":8030,"type":"Regular"},{"num":8031,"type":"Regular"},{"num":8032,"type":"Regular"},{"num":8033,"type":"Regular"},{"num":8034,"type":"Regular"},{"num":8035,"type":"Regular"},{"num":8036,"type":"Regular"},{"num":8037,"type":"Regular"},{"num":8038,"type":"Regular"},{"num":8039,"type":"Regular"},{"num":8040,"type":"Regular"},{"num":8042,"type":"Regular"},{"num":8046,"type":"Corner Suite"},{"num":8049,"type":"Regular"},{"num":8050,"type":"Regular"},{"num":8051,"type":"Regular"},{"num":8052,"type":"Regular"},{"num":8053,"type":"Regular"},{"num":8054,"type":"Regular"},{"num":8055,"type":"Regular"},{"num":8056,"type":"Regular"},{"num":8057,"type":"Regular"},{"num":8059,"type":"Regular"},{"num":8061,"type":"Regular"},{"num":8063,"type":"Regular"}],"9th":[{"num":9002,"type":"Regular"},{"num":9003,"type":"Regular"},{"num":9004,"type":"Regular"},{"num":9005,"type":"Regular"},{"num":9006,"type":"Regular"},{"num":9007,"type":"Regular"},{"num":9008,"type":"ADA"},{"num":9009,"type":"Regular"},{"num":9010,"type":"Regular"},{"num":9011,"type":"Regular"},{"num":9012,"type":"Regular"},{"num":9014,"type":"Corner Suite"},{"num":9015,"type":"Regular"},{"num":9020,"type":"Regular"},{"num":9022,"type":"Regular"},{"num":9024,"type":"Regular"},{"num":9026,"type":"Regular"},{"num":9027,"type":"Regular"},{"num":9028,"type":"Regular"},{"num":9029,"type":"Regular"},{"num":9030,"type":"Regular"},{"num":9031,"type":"Regular"},{"num":9032,"type":"Regular"},{"num":9033,"type":"Regular"},{"num":9034,"type":"Regular"},{"num":9035,"type":"Regular"},{"num":9036,"type":"Regular"},{"num":9037,"type":"Regular"},{"num":9038,"type":"Regular"},{"num":9039,"type":"Regular"},{"num":9040,"type":"Regular"},{"num":9042,"type":"Regular"},{"num":9046,"type":"Corner Suite"},{"num":9049,"type":"Regular"},{"num":9050,"type":"Regular"},{"num":9051,"type":"Regular"},{"num":9052,"type":"Regular"},{"num":9053,"type":"Regular"},{"num":9054,"type":"Regular"},{"num":9055,"type":"Regular"},{"num":9056,"type":"Regular"},{"num":9057,"type":"Regular"},{"num":9059,"type":"Regular"},{"num":9061,"type":"Regular"},{"num":9063,"type":"Regular"}]};
+
+const TRADES=[
+  {id:'c543f27c-3bb7-5bce-9105-0520241be1f0',label:'General Item'},
+  {id:'wishlist',label:'Wishlist'},
+  {id:'cd3f7cb1-8ac4-4415-8cc6-ac8d11b263af',label:'Framing / Drywall / Paint'},
+  {id:'5202f877-66ea-4a6e-a2b0-a744aeaabedb',label:'Flooring / Carpet / LVT'},
+  {id:'996a8d25-97c3-42bf-bcec-7a1dd359d060',label:'Electrical'},
+  {id:'8db0ea6c-a464-4c5b-9a3f-fe3f37b91abf',label:'Plumbing'},
+  {id:'375cbd9a-055f-488e-a856-a56700766f87',label:'Tile / Stone (GV)'},
+  {id:'4ec8cc75-a9aa-5943-b823-5754576c8730',label:'FF&E'},
+];
+const WISHLIST_TRADE_ID='wishlist';
+const GENERAL_TRADE_ID='c543f27c-3bb7-5bce-9105-0520241be1f0';
+const HARRIS_CO='Harris Associates';
+
+const COMPANIES=[
+  {name:'Draven Electric',email:'chris@dravenelectric.com',accId:'541216014'},
+  {name:'Southern Nevada Drywall Systems',email:'brian@snd.systems',accId:'541216015'},
+  {name:'Las Vegas Prestige Plumbing',email:'lasvegasprestigeplumbing@yahoo.com',accId:'541216017'},
+  {name:'GoPro Interiors',email:'shanem@gpilv.com',accId:'541216019'},
+  {name:'Southwest Doors and Hardware',email:'mike@swdhw.com',accId:''},
+  {name:'Graniti Vicentia',email:'lee@granitivicentia.com',accId:''},
+  {name:'Harris Associates',email:'kaynes@harrislv.com',accId:''},
+  {name:'JIVE Architecture, LLP',email:'ca@jivelv.com',accId:''},
+  {name:'KENNETH USSENKO DESIGN',email:'kenneth@kuproductions.com',accId:''},
+  {name:'UES',email:'jpresser@teamues.com',accId:''},
+  {name:'ECL Gaming',email:'bsilverstein@ecldevelopment.com',accId:''},
+];
+
+const HARRIS_MEMBERS=[
+  {name:'Kayne Siler',email:'kaynes@harrislv.com',id:'675JCCJSNHDDYNSS'},
+  {name:'Zander Chu',email:'zanderc@harrislv.com',id:''},
+  {name:'David Pizzi',email:'davidp@harrislv.com',id:''},
+  {name:'Jeffrey Whittle',email:'jeffw@harrislv.com',id:''},
+  {name:'Debra Netto',email:'debn@harrislv.com',id:''},
+  {name:'Mark Ladd',email:'markladd@harrislv.com',id:''},
+  {name:'Matt Rodgers',email:'mattr@harrislv.com',id:''},
+];
+
+const DEFAULT_TRADE_DEFAULTS={
+  'c543f27c-3bb7-5bce-9105-0520241be1f0':'Harris Associates',
+  'wishlist':'Harris Associates',
+  'cd3f7cb1-8ac4-4415-8cc6-ac8d11b263af':'Southern Nevada Drywall Systems',
+  '5202f877-66ea-4a6e-a2b0-a744aeaabedb':'GoPro Interiors',
+  '996a8d25-97c3-42bf-bcec-7a1dd359d060':'Draven Electric',
+  '8db0ea6c-a464-4c5b-9a3f-fe3f37b91abf':'Las Vegas Prestige Plumbing',
+  '375cbd9a-055f-488e-a856-a56700766f87':'Graniti Vicentia',
+  '4ec8cc75-a9aa-5943-b823-5754576c8730':'Graniti Vicentia',
+};
+
+// Room floor plan paths
+const ROOM_PLAN_PATHS={
+  king:'./Room Floor Plans/Typical King Room.jpg',
+  double:'./Room Floor Plans/Typical Double Room.jpg',
+  suite:'./Room Floor Plans/Corner Suite Room.jpg',
+  pool_suite:null,
+};
+
+const AREAS=[
+  {key:'corridor',label:'Corridor',cls:'a-corridor'},
+  {key:'elevator',label:'Elevator Lobby',cls:'a-elevator'},
+];
+
+const DEFAULT_CFG={
+  projectId:'',
+  projectName:'',
+  accountId:'',
+  fpBase:'./floor-plans/complete/',
+  autoDownload:true,
+  tradeDefaults:{...DEFAULT_TRADE_DEFAULTS},
+  activeCompanies:['Draven Electric','Southern Nevada Drywall Systems','Las Vegas Prestige Plumbing','GoPro Interiors','Southwest Doors and Hardware','Graniti Vicentia','Harris Associates'],
+  watchers:[],
+  customTrades:[],
+  tradeLabels:{},
+  lastTrade:'',lastCo:'',
+  accProjectName:'',
+  accMembers:[],
+  accCompanies:[],
+};
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const ST={
+  floor:'9th',
+  view:'grid',
+  room:null,       // {floor,areaKey,label,roomType,bedType}
+  pendingDot:null, // {x,y} percentages 0-100
+  pendingPhotos:[], // [{blob,watermarkedBlob,filename}]
+  photoTarget:null, // null=pending, issueId=existing
+  issues:[],       // cached for current room
+  photoUrls:new Map(), // id→objectURL
+  cfg:{...DEFAULT_CFG},
+  bedTypes:{},     // `${floor}_${roomNum}` → 'king'|'double'
+};
+
+// ─── INDEXEDDB ────────────────────────────────────────────────────────────────
+const DB=(()=>{
+  let db=null;
+  function open(){
+    return new Promise((res,rej)=>{
+      const r=indexedDB.open('casablanca_v3',1);
+      r.onupgradeneeded=e=>{
+        const d=e.target.result;
+        if(!d.objectStoreNames.contains('issues')){
+          const s=d.createObjectStore('issues',{keyPath:'id',autoIncrement:true});
+          s.createIndex('fl_area',['floor','areaKey']);
+          s.createIndex('floor','floor');
+        }
+        if(!d.objectStoreNames.contains('photos')){
+          const p=d.createObjectStore('photos',{keyPath:'id',autoIncrement:true});
+          p.createIndex('issueId','issueId');
+        }
+        if(!d.objectStoreNames.contains('settings')){
+          d.createObjectStore('settings',{keyPath:'key'});
+        }
+      };
+      r.onsuccess=e=>{db=e.target.result;res(db);};
+      r.onerror=()=>rej(r.error);
+    });
+  }
+  function tx(stores,mode){return db.transaction(stores,mode||'readonly');}
+  function promReq(r){return new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+
+  async function getSetting(key,def){
+    const r=await promReq(tx('settings').objectStore('settings').get(key));
+    return r?r.value:def;
+  }
+  async function setSetting(key,value){
+    await promReq(tx('settings','readwrite').objectStore('settings').put({key,value}));
+  }
+  async function getIssues(floor,areaKey){
+    const r=await promReq(tx('issues').objectStore('issues').index('fl_area').getAll([floor,areaKey]));
+    return r||[];
+  }
+  async function getFloorIssues(floor){
+    const r=await promReq(tx('issues').objectStore('issues').index('floor').getAll(floor));
+    return r||[];
+  }
+  async function getAllIssues(){
+    const r=await promReq(tx('issues').objectStore('issues').getAll());
+    return r||[];
+  }
+  async function addIssue(issue){return promReq(tx('issues','readwrite').objectStore('issues').add(issue));}
+  async function updateIssue(issue){return promReq(tx('issues','readwrite').objectStore('issues').put(issue));}
+  async function deleteIssue(id){return promReq(tx('issues','readwrite').objectStore('issues').delete(id));}
+  async function getPhotos(issueId){
+    const r=await promReq(tx('photos').objectStore('photos').index('issueId').getAll(issueId));
+    return r||[];
+  }
+  async function getAllPhotos(){
+    const r=await promReq(tx('photos').objectStore('photos').getAll());
+    return r||[];
+  }
+  async function addPhoto(photo){return promReq(tx('photos','readwrite').objectStore('photos').add(photo));}
+  async function deletePhoto(id){return promReq(tx('photos','readwrite').objectStore('photos').delete(id));}
+  async function deletePhotosByIssue(issueId){
+    const photos=await getPhotos(issueId);
+    for(const p of photos) await deletePhoto(p.id);
+  }
+  return{open,getSetting,setSetting,getIssues,getFloorIssues,getAllIssues,addIssue,updateIssue,deleteIssue,getPhotos,getAllPhotos,addPhoto,deletePhoto,deletePhotosByIssue};
+})();
+
+// ─── UTILITIES ────────────────────────────────────────────────────────────────
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function dateStamp(){const d=new Date();return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());}
+function pad(n){return String(n).padStart(2,'0');}
+function addBusinessDays(date,days){
+  const d=new Date(date);let a=0;
+  while(a<days){d.setDate(d.getDate()+1);const dw=d.getDay();if(dw!==0&&dw!==6)a++;}
+  return d.toISOString().slice(0,10);
+}
+function floorLabel(fk){return fk+' Floor';}
+function blobToBase64(blob){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(blob);});}
+function blobToArrayBuffer(blob){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsArrayBuffer(blob);});}
+function getPhotoUrl(photo){
+  if(!ST.photoUrls.has(photo.id)){
+    ST.photoUrls.set(photo.id,URL.createObjectURL(photo.watermarkedBlob||photo.blob));
+  }
+  return ST.photoUrls.get(photo.id);
+}
+function downloadBlob(blob,filename){
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+function getRoomPlanSrc(roomType,bedType){
+  if(roomType==='Corner Suite')return ROOM_PLAN_PATHS.suite;
+  if(roomType==='Pool Suite'||roomType==='ADA Pool Suite')return ROOM_PLAN_PATHS.pool_suite;
+  if(bedType==='double')return ROOM_PLAN_PATHS.double;
+  return ROOM_PLAN_PATHS.king;
+}
+function getFloorPlanSrc(floorKey){
+  const base=ST.cfg.fpBase||'./floor-plans/complete/';
+  return base+FLOOR_PLAN_NAMES[floorKey];
+}
+function tradeLabel(tradeId){
+  if(!tradeId)return '';
+  if(tradeId.startsWith('custom_')){
+    const idx=parseInt(tradeId.replace('custom_',''));
+    const c=(ST.cfg.customTrades||[])[idx];
+    return c?c.label:'Custom';
+  }
+  const t=TRADES.find(x=>x.id===tradeId);
+  return (ST.cfg.tradeLabels&&ST.cfg.tradeLabels[tradeId])||( t?t.label:'');
+}
+function resolveAccTradeId(tradeId){
+  if(!tradeId||tradeId===WISHLIST_TRADE_ID||tradeId.startsWith('custom_'))return GENERAL_TRADE_ID;
+  return tradeId;
+}
+
+// ─── AUTH CONSTANTS ───────────────────────────────────────────────────────────
+const APS_CLIENT_ID='uPZWC7FwvOtXrPmcgEmQnfKqC1NcbS4mDSIJ6GU4VPRVzhbn';
+// Production URL — update this once you have your Azure/Netlify hosting URL:
+const APS_REDIRECT_URI_PROD='https://harrispunchtools.z22.web.core.windows.net/punch-tool.html'; // ← UPDATE THIS
+const APS_REDIRECT_URI_LOCAL='http://localhost:8080/punch-tool.html';
+const APS_REDIRECT_URI=(()=>{
+  const h=window.location.hostname;
+  return(h==='localhost'||h==='127.0.0.1')?APS_REDIRECT_URI_LOCAL:APS_REDIRECT_URI_PROD;
+})();
+const APS_SCOPES='data:read data:write data:create account:read openid user-profile:read';
+const APS_AUTH_URL='https://developer.api.autodesk.com/authentication/v2/authorize';
+const APS_TOKEN_URL='https://developer.api.autodesk.com/authentication/v2/token';
+
+// ─── PKCE AUTH ────────────────────────────────────────────────────────────────
+function _randStr(n){
+  const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+  return Array.from(crypto.getRandomValues(new Uint8Array(n)),b=>c[b%c.length]).join('');
+}
+async function _sha256b64u(s){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+  return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+async function loginWithAutodesk(){
+  if(!APS_CLIENT_ID||APS_CLIENT_ID==='YOUR_APS_CLIENT_ID'){
+    document.getElementById('auth-status').textContent='⚠ App not configured yet — contact your administrator.';
+    return;
+  }
+  const verifier=_randStr(64);const state=_randStr(16);
+  const challenge=await _sha256b64u(verifier);
+  sessionStorage.setItem('pkce_v',verifier);sessionStorage.setItem('pkce_s',state);
+  const p=new URLSearchParams({response_type:'code',client_id:APS_CLIENT_ID,redirect_uri:APS_REDIRECT_URI,scope:APS_SCOPES,state,code_challenge:challenge,code_challenge_method:'S256'});
+  window.location.href=APS_AUTH_URL+'?'+p.toString();
+}
+async function _exchangeCode(code,verifier){
+  const r=await fetch(APS_TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',code,redirect_uri:APS_REDIRECT_URI,code_verifier:verifier,client_id:APS_CLIENT_ID}).toString()});
+  if(!r.ok){const t=await r.text();throw new Error(`Auth HTTP ${r.status}: ${t.slice(0,120)}`);}
+  return r.json();
+}
+async function _refreshToken(rt){
+  const r=await fetch(APS_TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'refresh_token',refresh_token:rt,client_id:APS_CLIENT_ID,scope:APS_SCOPES}).toString()});
+  if(!r.ok)throw new Error('Refresh HTTP '+r.status);
+  return r.json();
+}
+async function _fetchProfile(token){
+  try{const r=await fetch('https://developer.api.autodesk.com/userprofile/v1/users/@me',{headers:{'Authorization':'Bearer '+token}});return r.ok?r.json():null;}catch{return null;}
+}
+async function _saveAuth(tokens,existing){
+  const p=await _fetchProfile(tokens.access_token);
+  const auth={
+    accessToken:tokens.access_token,
+    refreshToken:tokens.refresh_token||(existing&&existing.refreshToken)||null,
+    expiresAt:Date.now()+((tokens.expires_in||3600)*1000),
+    userName:p?([p.firstName,p.lastName].filter(Boolean).join(' ')||p.emailId||''):(existing&&existing.userName||''),
+    userEmail:p?(p.emailId||''):(existing&&existing.userEmail||'')
+  };
+  await DB.setSetting('auth',auth);
+  _updateUserChip(auth);
+  return auth;
+}
+function _updateUserChip(auth){
+  const chip=document.getElementById('user-chip');
+  const nm=document.getElementById('user-name');
+  if(auth&&(auth.userName||auth.userEmail)){
+    nm.textContent=auth.userName||auth.userEmail;chip.style.display='flex';
+  }else{chip.style.display='none';}
+}
+function showLoginScreen(msg){
+  document.getElementById('auth-overlay').style.display='flex';
+  if(msg)document.getElementById('auth-status').textContent=msg;
+}
+function hideLoginScreen(){document.getElementById('auth-overlay').style.display='none';}
+async function logout(){
+  if(!confirm('Log out of Harris Punch Walk?\n\nYour local punch data is not affected.'))return;
+  await DB.setSetting('auth',null);
+  sessionStorage.clear();
+  document.getElementById('user-chip').style.display='none';
+  showLoginScreen('');
+}
+async function getAccToken(){
+  const auth=await DB.getSetting('auth',null);
+  if(!auth){showLoginScreen('Please log in to continue.');throw new Error('Not logged in.');}
+  if(auth.accessToken&&auth.expiresAt>Date.now()+30000)return auth.accessToken;
+  if(auth.refreshToken){
+    try{
+      const data=await _refreshToken(auth.refreshToken);
+      const updated=await _saveAuth(data,auth);
+      return updated.accessToken;
+    }catch(e){
+      await DB.setSetting('auth',null);
+      showLoginScreen('Session expired — please log in again.');
+      throw new Error('Session expired.');
+    }
+  }
+  showLoginScreen('Session expired — please log in again.');
+  throw new Error('Session expired.');
+}
+async function checkAuth(){
+  const params=new URLSearchParams(window.location.search);
+  const code=params.get('code'),state=params.get('state'),error=params.get('error');
+  if(error){showLoginScreen('Login error: '+(params.get('error_description')||error));return false;}
+  if(code){
+    const verifier=sessionStorage.getItem('pkce_v'),savedState=sessionStorage.getItem('pkce_s');
+    document.getElementById('auth-overlay').style.display='flex';
+    document.getElementById('auth-status').textContent='Completing login…';
+    document.getElementById('login-btn').style.display='none';
+    if(!verifier||state!==savedState){showLoginScreen('Auth state mismatch — please try again.');document.getElementById('login-btn').style.display='';return false;}
+    try{
+      const tokens=await _exchangeCode(code,verifier);
+      sessionStorage.removeItem('pkce_v');sessionStorage.removeItem('pkce_s');
+      await _saveAuth(tokens,null);
+      window.history.replaceState({},'',window.location.pathname);
+      hideLoginScreen();document.getElementById('login-btn').style.display='';
+      // Auth complete — now safe to show install prompt if pending
+      if(_installPrompt&&!window.matchMedia('(display-mode: standalone)').matches&&localStorage.getItem('pwa-dismissed')!=='1'){
+        document.getElementById('install-banner').classList.add('visible');
+      }
+      return true;
+    }catch(err){
+      showLoginScreen('Login failed: '+err.message);
+      document.getElementById('login-btn').style.display='';return false;
+    }
+  }
+  const auth=await DB.getSetting('auth',null);
+  if(!auth){showLoginScreen('');return false;}
+  if(auth.accessToken&&auth.expiresAt>Date.now()+30000){_updateUserChip(auth);hideLoginScreen();return true;}
+  if(auth.refreshToken){
+    try{
+      document.getElementById('auth-overlay').style.display='flex';
+      document.getElementById('auth-status').textContent='Refreshing session…';
+      document.getElementById('login-btn').style.display='none';
+      const data=await _refreshToken(auth.refreshToken);
+      await _saveAuth(data,auth);
+      hideLoginScreen();document.getElementById('login-btn').style.display='';return true;
+    }catch(e){
+      await DB.setSetting('auth',null);
+      showLoginScreen('');document.getElementById('login-btn').style.display='';return false;
+    }
+  }
+  showLoginScreen('');return false;
+}
+async function handleAuthSettingsBtn(){
+  const auth=await DB.getSetting('auth',null);
+  if(auth&&auth.accessToken&&auth.expiresAt>Date.now()){logout();}
+  else{closeSettings();loginWithAutodesk();}
+}
+async function _refreshAuthSettingsPanel(){
+  const auth=await DB.getSetting('auth',null);
+  const el=document.getElementById('auth-settings-status');
+  const btn=document.getElementById('auth-settings-btn');
+  if(!el)return;
+  if(auth&&auth.accessToken&&auth.expiresAt>Date.now()){
+    const expDate=new Date(auth.expiresAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+    el.innerHTML=`<strong style="color:#006630">&#10003; Logged in</strong> &nbsp;·&nbsp; ${auth.userName||''}${auth.userEmail?` <span style="color:#888;">(${auth.userEmail})</span>`:''}<br><span style="font-size:11px;color:#888;">Token expires ${expDate}</span>`;
+    if(btn){btn.textContent='Logout';btn.className='btn btn-danger btn-sm';}
+  }else{
+    el.innerHTML='<span style="color:#c00;">Not logged in.</span>';
+    if(btn){btn.textContent='Login with Autodesk';btn.className='btn btn-blue btn-sm';}
+  }
+}
+
+// ─── SETTINGS ─────────────────────────────────────────────────────────────────
+async function loadSettings(){
+  const saved=await DB.getSetting('cfg',null);
+  if(saved) ST.cfg={...DEFAULT_CFG,...saved,tradeDefaults:{...DEFAULT_TRADE_DEFAULTS,...(saved.tradeDefaults||{})}};
+  const bt=await DB.getSetting('bedTypes',{});
+  ST.bedTypes=bt||{};
+}
+async function persistSettings(){
+  await DB.setSetting('cfg',ST.cfg);
+  await DB.setSetting('bedTypes',ST.bedTypes);
+}
+function openSettings(){
+  document.getElementById('cfg-fp-base').value=ST.cfg.fpBase||'./floor-plans/complete/';
+  document.getElementById('cfg-auto-dl').checked=!!ST.cfg.autoDownload;
+  _refreshAuthSettingsPanel();
+  _updateProjectDisplay();
+  // Hide project picker controls until user clicks Load
+  document.getElementById('project-select').style.display='none';
+  document.getElementById('btn-use-project').style.display='none';
+  document.getElementById('project-load-status').textContent='';
+  buildTradeCfgRows();
+  buildWatcherRows();
+  buildCompanyRows();
+  buildNewTradeCoSelect();
+  document.getElementById('settings-modal').classList.add('open');
+}
+function closeSettings(){document.getElementById('settings-modal').classList.remove('open');}
+function updateTokenStatus(){
+  const v=document.getElementById('cfg-token').value.trim();
+  const el=document.getElementById('token-status');
+  el.style.color=v?'#006630':'#888';
+  el.textContent=v?'Token configured — direct sync enabled.':'No token — use Copy Payload for MCP-assisted sync.';
+}
+function buildTradeCfgRows(){
+  const allCos=liveCompanies();
+  const coOpts=allCos.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  const allTrades=[...TRADES,...(ST.cfg.customTrades||[]).map((c,i)=>({id:'custom_'+i,label:c.label}))];
+  let html=allTrades.map(t=>{
+    const cur=ST.cfg.tradeDefaults[t.id]||'';
+    const lbl=(ST.cfg.tradeLabels&&ST.cfg.tradeLabels[t.id])||t.label;
+    const isBuiltin=!t.id.startsWith('custom_');
+    const isHarrisOnly=(t.id===GENERAL_TRADE_ID||t.id===WISHLIST_TRADE_ID);
+    return `<div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center;">
+      <input type="text" value="${esc(lbl)}" data-trade-lbl="${t.id}" ${isHarrisOnly?'disabled':''} style="flex:1;min-width:130px;padding:6px 8px;font-size:12px;border:1.5px solid #ccc;border-radius:4px;outline:none;" onchange="ST.cfg.tradeLabels=ST.cfg.tradeLabels||{};ST.cfg.tradeLabels['${t.id}']=this.value.trim()||'${esc(t.label)}';">
+      <select data-trade-co="${t.id}" style="flex:1;min-width:130px;padding:6px 8px;font-size:12px;border:1.5px solid #ccc;border-radius:4px;background:#fff;outline:none;" ${isHarrisOnly?'disabled':''}>
+        <option value="">— None —</option>${coOpts.replace(`value="${cur}"`,`value="${cur}" selected`)}
+      </select>
+      ${isHarrisOnly?'<span style="font-size:10px;color:#888;min-width:48px;">GC only</span>':isBuiltin?'<span style="font-size:10px;color:#bbb;min-width:48px;">built-in</span>':`<button onclick="removeCustomTrade(${parseInt(t.id.replace('custom_',''))})" style="background:#fff5f5;border:1px solid #e0a0a0;color:#c00;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;">Remove</button>`}
+    </div>`;
+  }).join('');
+  document.getElementById('trade-cfg-rows').innerHTML=html;
+}
+function memberKey(m){return m.id||('email:'+m.email);}
+function liveCompanies(){return ST.cfg.accCompanies&&ST.cfg.accCompanies.length?ST.cfg.accCompanies:[];}
+function liveMembers(){return ST.cfg.accMembers&&ST.cfg.accMembers.length?ST.cfg.accMembers:[];}
+
+// ─── ACC PROJECT DATA FETCH ───────────────────────────────────────────────────
+async function accFetchAll(url,token){
+  const items=[];let offset=0;const limit=200;
+  while(true){
+    const sep=url.includes('?')?'&':'?';
+    const resp=await fetch(`${url}${sep}limit=${limit}&offset=${offset}`,{headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}});
+    if(!resp.ok)throw new Error(`HTTP ${resp.status} — ${url}`);
+    const data=await resp.json();
+    const batch=data.results||data.data||data.users||data.companies||data.members||[];
+    items.push(...batch);
+    const total=data.pagination?.totalResults??data.total??null;
+    if(batch.length<limit||(total!==null&&items.length>=total))break;
+    offset+=batch.length;
+  }
+  return items;
+}
+// ─── PROJECT PICKER ───────────────────────────────────────────────────────────
+async function loadProjectList(){
+  const statusEl=document.getElementById('project-load-status');
+  const sel=document.getElementById('project-select');
+  statusEl.textContent='Loading projects…';statusEl.style.color='#555';
+  let token;
+  try{token=await getAccToken();}catch(e){statusEl.textContent='⚠ '+e.message;statusEl.style.color='#c00';return;}
+  try{
+    // Fetch hubs (ACC accounts)
+    const hubsResp=await fetch('https://developer.api.autodesk.com/project/v1/hubs',{headers:{'Authorization':'Bearer '+token}});
+    if(!hubsResp.ok)throw new Error('Hubs HTTP '+hubsResp.status);
+    const hubsData=await hubsResp.json();
+    const hubs=(hubsData.data||[]);
+    if(!hubs.length)throw new Error('No ACC hubs found for this account.');
+    // Collect projects from all hubs
+    const allProjects=[];
+    for(const hub of hubs){
+      const projResp=await fetch(`https://developer.api.autodesk.com/project/v1/hubs/${hub.id}/projects?pageNumber=0&pageLimit=100`,{headers:{'Authorization':'Bearer '+token}});
+      if(!projResp.ok)continue;
+      const projData=await projResp.json();
+      const projects=(projData.data||[]);
+      projects.forEach(p=>{
+        allProjects.push({
+          id:p.id,
+          name:p.attributes&&p.attributes.name?p.attributes.name:'Unnamed Project',
+          accountId:hub.id,
+          status:p.attributes&&p.attributes.status?p.attributes.status:'active'
+        });
+      });
+    }
+    // Filter to active projects, sort by name
+    const active=allProjects.filter(p=>p.status!=='archived').sort((a,b)=>a.name.localeCompare(b.name));
+    if(!active.length)throw new Error('No active projects found.');
+    sel.innerHTML='<option value="">— Select a project —</option>'+
+      active.map(p=>`<option value="${p.id}" data-name="${p.name.replace(/"/g,'&quot;')}" data-account="${p.accountId}">${p.name}</option>`).join('');
+    sel.style.display='block';
+    statusEl.textContent=`${active.length} project(s) found.`;statusEl.style.color='#1a5a2a';
+    document.getElementById('btn-use-project').style.display='none';
+    // Pre-select current project if set
+    if(ST.cfg.projectId){
+      sel.value=ST.cfg.projectId;
+      if(sel.value)document.getElementById('btn-use-project').style.display='';
+    }
+  }catch(err){
+    statusEl.textContent='✗ '+err.message;statusEl.style.color='#c00';
+  }
+}
+function onProjectSelectChange(val){
+  document.getElementById('btn-use-project').style.display=val?'':'none';
+}
+async function confirmProjectSelection(){
+  const sel=document.getElementById('project-select');
+  const opt=sel.options[sel.selectedIndex];
+  if(!opt||!opt.value)return;
+  const pid=opt.value;
+  const pname=opt.getAttribute('data-name')||opt.text;
+  const accountId=opt.getAttribute('data-account')||'';
+  const switching=ST.cfg.projectId&&ST.cfg.projectId!==pid;
+  if(switching&&!confirm(`Switch to project:\n"${pname}"?\n\nThis will clear the cached member and company lists. Your punch items are not affected.`))return;
+  ST.cfg.projectId=pid;
+  ST.cfg.projectName=pname;
+  ST.cfg.accountId=accountId;
+  if(switching){ST.cfg.accMembers=[];ST.cfg.accCompanies=[];ST.cfg.watchers=[];}
+  await persistSettings();
+  _updateProjectDisplay();
+  document.getElementById('btn-use-project').style.display='none';
+  document.getElementById('btn-load-acc-data').style.display='';
+  document.getElementById('acc-fetch-status').textContent='Project set. Click "Load Members & Companies" to pull team data from ACC.';
+  document.getElementById('acc-fetch-status').style.color='#1a5a2a';
+}
+function _updateProjectDisplay(){
+  const el=document.getElementById('active-project-display');
+  const hdr=document.getElementById('hdr-project');
+  if(ST.cfg.projectName){
+    document.getElementById('active-project-name').textContent=ST.cfg.projectName;
+    document.getElementById('active-project-id').textContent=ST.cfg.projectId;
+    if(el)el.style.display='block';
+    if(hdr)hdr.textContent=ST.cfg.projectName+' · Harris Associates';
+    document.getElementById('btn-load-acc-data').style.display='';
+  }else{
+    if(el)el.style.display='none';
+    if(hdr)hdr.textContent='Harris Associates';
+    document.getElementById('btn-load-acc-data').style.display='none';
+  }
+}
+
+async function fetchAccProjectData(){
+  const pid=document.getElementById('cfg-pid').value.trim()||ST.cfg.projectId;
+  const statusEl=document.getElementById('acc-fetch-status');
+  if(!pid){statusEl.textContent='⚠ Enter Project ID first.';statusEl.style.color='#c00';return;}
+  let token;
+  try{token=await getAccToken();}catch(e){statusEl.textContent='⚠ '+e.message;statusEl.style.color='#c00';return;}
+  statusEl.textContent='Fetching from ACC…';statusEl.style.color='#555';
+  const BASE='https://developer.api.autodesk.com';
+  try{
+    // Members with roles
+    const users=await accFetchAll(`${BASE}/construction/admin/v1/projects/${pid}/users`,token);
+    ST.cfg.accMembers=users.map(u=>({
+      name:([u.firstName,u.lastName].filter(Boolean).join(' '))||u.email||'Unknown',
+      email:u.email||'',
+      id:u.autodeskId||u.uid||u.id||'',
+      roles:(u.roles||[]).map(r=>r.projectRole||r.role||r.name||'').filter(Boolean)
+    })).filter(u=>u.email);
+
+    // Companies
+    const cos=await accFetchAll(`${BASE}/construction/admin/v1/projects/${pid}/companies`,token);
+    ST.cfg.accCompanies=cos.map(c=>({name:c.name||'',accId:c.id||c.companyId||''})).filter(c=>c.name);
+
+    // Auto-set watchers for Superintendent / Project Manager / Project Engineer if none set yet
+    if(!(ST.cfg.watchers||[]).length){
+      const autoRoles=['superintendent','project manager','project engineer'];
+      ST.cfg.watchers=ST.cfg.accMembers
+        .filter(m=>m.roles.some(r=>autoRoles.includes(r.toLowerCase())))
+        .map(m=>memberKey(m));
+    }
+
+    await persistSettings();
+    const projName=ST.cfg.accProjectName?` — ${ST.cfg.accProjectName}`:'';
+    statusEl.textContent=`✓ ${ST.cfg.accMembers.length} members, ${ST.cfg.accCompanies.length} companies loaded${projName}`;
+    statusEl.style.color='#1a5a2a';
+    buildWatcherRows();buildCompanyRows();buildTradeCfgRows();buildNewTradeCoSelect();
+  }catch(err){
+    statusEl.textContent='✗ '+err.message;statusEl.style.color='#c00';
+    console.error('ACC fetch error:',err);
+  }
+}
+
+function buildWatcherRows(){
+  const saved=ST.cfg.watchers||[];
+  const members=liveMembers();
+  const el=document.getElementById('watcher-rows');
+  if(!members.length){
+    el.innerHTML='<div class="setup-note" style="color:#888;font-style:italic;">No project members loaded. Click "Load from ACC" above.</div>';
+    return;
+  }
+  el.innerHTML=members.map(m=>{
+    const key=memberKey(m);
+    const on=saved.includes(key);
+    const roleHtml=m.roles&&m.roles.length?` <span style="font-size:10px;color:#0a3a8a;background:#e8f0ff;padding:1px 5px;border-radius:3px;font-weight:600;">${m.roles.join(', ')}</span>`:'';
+    const warn=!m.id?'<span style="font-size:10px;color:#e8a020;" title="No ACC ID — skipped at sync">⚠</span> ':'';
+    return `<div class="company-row"><div class="co-name">${warn}${m.name}${roleHtml}<br><span class="co-email">${m.email}</span></div><button class="toggle-btn${on?' active':''}" data-wid="${key}" onclick="toggleWatcher(this)">${on?'Watcher':'Off'}</button></div>`;
+  }).join('');
+}
+function buildCompanyRows(){
+  const active=ST.cfg.activeCompanies||[];
+  const companies=liveCompanies();
+  const el=document.getElementById('company-rows');
+  if(!companies.length){
+    el.innerHTML='<div class="setup-note" style="color:#888;font-style:italic;">No companies loaded. Click "Load from ACC" above.</div>';
+    return;
+  }
+  el.innerHTML=companies.map(c=>{
+    const on=active.includes(c.name);
+    const warn=!c.accId?'<span style="font-size:10px;color:#e8a020;" title="No ACC ID — won\'t sync assign">⚠</span> ':'';
+    return `<div class="company-row"><div class="co-name">${warn}${c.name}<br><span class="co-email">${c.accId||'No ACC ID'}</span></div><button class="toggle-btn${on?' active':''}" data-co="${c.name}" onclick="toggleCompany(this)">${on?'Active':'Off'}</button></div>`;
+  }).join('');
+}
+function buildNewTradeCoSelect(){
+  const active=ST.cfg.activeCompanies||[];
+  const sel=document.getElementById('new-trade-co');if(!sel)return;
+  const cos=liveCompanies().filter(c=>!active.length||active.includes(c.name));
+  sel.innerHTML='<option value="">— Company —</option>'+cos.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+}
+function toggleWatcher(btn){btn.classList.toggle('active');btn.textContent=btn.classList.contains('active')?'Watcher':'Off';}
+function toggleCompany(btn){btn.classList.toggle('active');btn.textContent=btn.classList.contains('active')?'Active':'Off';}
+function addCustomTrade(){
+  const lbl=document.getElementById('new-trade-label').value.trim();
+  const co=document.getElementById('new-trade-co').value;
+  if(!lbl){alert('Enter issue type name.');return;}
+  if(!ST.cfg.customTrades)ST.cfg.customTrades=[];
+  ST.cfg.customTrades.push({label:lbl,co});
+  const idx=ST.cfg.customTrades.length-1;
+  if(co)ST.cfg.tradeDefaults['custom_'+idx]=co;
+  document.getElementById('new-trade-label').value='';
+  buildTradeCfgRows();buildNewTradeCoSelect();
+}
+function removeCustomTrade(idx){
+  if(!confirm('Remove this issue type?'))return;
+  ST.cfg.customTrades.splice(idx,1);
+  buildTradeCfgRows();buildNewTradeCoSelect();
+}
+async function saveSettings(){
+  ST.cfg.projectId=document.getElementById('cfg-pid').value.trim();
+  ST.cfg.fpBase=document.getElementById('cfg-fp-base').value.trim()||'./floor-plans/complete/';
+  ST.cfg.autoDownload=document.getElementById('cfg-auto-dl').checked;
+  // Save trade defaults from selects
+  document.querySelectorAll('[data-trade-co]').forEach(sel=>{
+    const tid=sel.getAttribute('data-trade-co');
+    if(sel.value)ST.cfg.tradeDefaults[tid]=sel.value;
+    else delete ST.cfg.tradeDefaults[tid];
+  });
+  // Save custom trade company from selects
+  document.querySelectorAll('[data-trade-co^="custom_"]').forEach((sel,i)=>{
+    if(ST.cfg.customTrades&&ST.cfg.customTrades[i])ST.cfg.customTrades[i].co=sel.value;
+  });
+  // Watchers
+  ST.cfg.watchers=[];
+  document.querySelectorAll('#watcher-rows .toggle-btn.active').forEach(btn=>{
+    const key=btn.getAttribute('data-wid');if(key)ST.cfg.watchers.push(key);
+  });
+  // Active companies
+  ST.cfg.activeCompanies=[];
+  document.querySelectorAll('#company-rows .toggle-btn.active').forEach(btn=>{
+    ST.cfg.activeCompanies.push(btn.getAttribute('data-co'));
+  });
+  await persistSettings();
+  _updateProjectDisplay();
+  closeSettings();
+  buildTradeSelect();const _initTrade=document.getElementById('issue-trade').value;setCoDisplay('issue-co-display','issue-co-name',getTradeCompany(_initTrade));
+  // If a project is now configured, render the app (handles first-time setup flow)
+  if(ST.cfg.projectId){setView('grid');renderAll();}
+}
+
+// ─── FLOOR TABS & VIEWS ───────────────────────────────────────────────────────
+async function renderFloorTabs(){
+  const all=await DB.getAllIssues();
+  const counts={};
+  all.forEach(i=>{if(!i.resolved){counts[i.floor]=(counts[i.floor]||0)+1;}});
+  document.getElementById('floor-tabs').innerHTML=FLOOR_KEYS.map(fk=>{
+    const c=counts[fk]||0;
+    return `<div class="floor-tab${fk===ST.floor?' active':''}" onclick="switchFloor('${fk}')">${fk} Floor${c?`<span class="tab-badge">${c}</span>`:''}</div>`;
+  }).join('');
+  document.getElementById('floor-label-display').textContent=ST.floor+' Floor';
+}
+function switchFloor(fk){ST.floor=fk;closePanel();renderAll();}
+function setView(v){
+  ST.view=v;
+  document.getElementById('btn-grid').classList.toggle('active',v==='grid');
+  document.getElementById('btn-map').classList.toggle('active',v==='map');
+  document.getElementById('grid-section').style.display=v==='grid'?'':'none';
+  document.getElementById('map-section').style.display=v==='map'?'':'none';
+  if(v==='map')renderMapView();
+}
+
+// ─── GRID VIEW ────────────────────────────────────────────────────────────────
+async function renderGrid(){
+  const issues=await DB.getFloorIssues(ST.floor);
+  // Count by areaKey
+  const cnt={};const synCnt={};
+  issues.forEach(i=>{
+    cnt[i.areaKey]=(cnt[i.areaKey]||0)+1;
+    if(i.synced)synCnt[i.areaKey]=(synCnt[i.areaKey]||0)+1;
+  });
+  // Area buttons
+  const areaHtml=AREAS.map(a=>{
+    const c=cnt[a.key]||0;const allSyn=c>0&&(synCnt[a.key]||0)===c;
+    const sel=ST.room&&ST.room.areaKey===a.key?' selected':'';
+    return `<div class="area-btn ${a.cls}${c?' has-items':''}${sel}" onclick="openArea('${a.key}','${a.label}')">${c?`<span class="punch-badge">${c}</span>`:''}${allSyn?'<span class="synced-dot"></span>':''}${a.label}</div>`;
+  }).join('');
+  document.getElementById('area-row').innerHTML=areaHtml;
+  // Room buttons: even rooms on top row, odd rooms on bottom row (mirrors hotel hallway)
+  const allRooms=(ROOMS[ST.floor]||[]).slice().sort((a,b)=>a.num-b.num);
+  const evenRooms=allRooms.filter(r=>r.num%2===0);
+  const oddRooms=allRooms.filter(r=>r.num%2!==0);
+  const ROOM_LABEL_MAP={'ADA':'ADA','Corner Suite':'Corner','Pool Suite':'Pool','ADA Pool Suite':'ADA Pool'};
+  function roomBtn(r){
+    const c=cnt[String(r.num)]||0;const allSyn=c>0&&(synCnt[String(r.num)]||0)===c;
+    const sel=ST.room&&ST.room.areaKey===String(r.num)?' selected':'';
+    const typeClass='rt-'+r.type.replace(/\s+/g,'');
+    const lbl=ROOM_LABEL_MAP[r.type]||'';
+    return `<div class="room-btn ${typeClass}${c?' has-items':''}${sel}" onclick="onRoomClick(${r.num},'${r.type}')" id="rb${r.num}">${c?`<span class="punch-badge">${c}</span>`:''}${allSyn?'<span class="synced-dot"></span>':''}${r.num}${lbl?`<span class="room-label">${lbl}</span>`:''}</div>`;
+  }
+  document.getElementById('room-grid').innerHTML=
+    `<div class="room-row">${evenRooms.map(roomBtn).join('')}</div>`+
+    `<div class="hallway-strip"></div>`+
+    `<div class="room-row">${oddRooms.map(roomBtn).join('')}</div>`;
+}
+
+// ─── MAP VIEW ─────────────────────────────────────────────────────────────────
+async function renderMapView(){
+  const src=getFloorPlanSrc(ST.floor);
+  const img=document.getElementById('map-img');
+  img.src=src;img.style.display='block';
+  document.getElementById('map-placeholder').style.display='none';
+  // Area row for map
+  const issues=await DB.getFloorIssues(ST.floor);
+  const cnt={};issues.forEach(i=>{cnt[i.areaKey]=(cnt[i.areaKey]||0)+1;});
+  document.getElementById('map-area-row').innerHTML=AREAS.map(a=>{
+    const c=cnt[a.key]||0;
+    return `<div class="area-btn ${a.cls}${c?' has-items':''}" onclick="openArea('${a.key}','${a.label}')">${c?`<span class="punch-badge">${c}</span>`:''}${a.label}</div>`;
+  }).join('');
+  img.onload=()=>drawMapDots(issues);
+  if(img.complete&&img.naturalWidth)drawMapDots(issues);
+}
+function drawMapDots(issues){
+  const img=document.getElementById('map-img');
+  const canvas=document.getElementById('map-canvas');
+  const w=img.offsetWidth,h=img.offsetHeight;
+  if(!w||!h)return;
+  canvas.width=w;canvas.height=h;
+  canvas.style.width=w+'px';canvas.style.height=h+'px';
+  const ctx=canvas.getContext('2d');ctx.clearRect(0,0,w,h);
+  issues.filter(i=>i.dotX!==null&&i.dotY!==null&&!i.resolved).forEach((iss,idx)=>{
+    const x=(iss.dotX/100)*w,y=(iss.dotY/100)*h;
+    ctx.beginPath();ctx.arc(x,y,9,0,2*Math.PI);
+    ctx.fillStyle='rgba(232,160,32,0.85)';ctx.fill();
+    ctx.strokeStyle='#1c2b3a';ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle='#1c2b3a';ctx.font='bold 10px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(idx+1,x,y);
+  });
+}
+document.getElementById('map-canvas').addEventListener('click',async function(e){
+  const img=document.getElementById('map-img');
+  const rect=img.getBoundingClientRect();
+  const x=((e.clientX-rect.left)/rect.width)*100;
+  const y=((e.clientY-rect.top)/rect.height)*100;
+  // Show room picker popup
+  const rooms=ROOMS[ST.floor]||[];
+  const opts=rooms.map(r=>`<option value="${r.num}|${r.type}">${r.num} (${r.type})</option>`).join('');
+  const areas=AREAS.map(a=>`<option value="${a.key}|${a.label}|area">${a.label}</option>`).join('');
+  const pick=document.createElement('div');
+  pick.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:8px;padding:16px;z-index:800;box-shadow:0 4px 24px rgba(0,0,0,.4);min-width:220px;';
+  pick.innerHTML=`<div style="font-size:13px;font-weight:700;margin-bottom:8px;">Select room at this location:</div><select id="map-room-pick" style="width:100%;padding:7px;font-size:13px;border:1.5px solid #ccc;border-radius:4px;margin-bottom:10px;"><option value="">— Select room —</option>${opts}${areas}</select><div style="display:flex;gap:8px;"><button onclick="confirmMapPick(${x.toFixed(1)},${y.toFixed(1)},this)" class="btn btn-orange" style="flex:1">Open</button><button onclick="this.closest('div[style]').remove()" class="btn btn-ghost" style="flex:1">Cancel</button></div>`;
+  document.body.appendChild(pick);
+});
+async function confirmMapPick(x,y,btn){
+  const pick=btn.closest('div[style]');
+  const sel=document.getElementById('map-room-pick').value;
+  if(!sel){alert('Select a room first.');return;}
+  pick.remove();
+  const parts=sel.split('|');
+  if(parts[2]==='area'){openArea(parts[0],parts[1]);}
+  else{onRoomClick(parseInt(parts[0]),parts[1]);}
+}
+
+// ─── BED TYPE PICKER ──────────────────────────────────────────────────────────
+let _pendingRoomClick=null;
+const BED_PICK_TYPES=new Set(['Regular','ADA']);
+function onRoomClick(num,type){
+  if(BED_PICK_TYPES.has(type)){
+    const key=`${ST.floor}_${num}`;
+    if(ST.bedTypes[key]){
+      openRoom(String(num),type,ST.bedTypes[key]);
+    }else{
+      _pendingRoomClick={num,type};
+      document.getElementById('bed-picker').classList.add('open');
+    }
+  }else{
+    // Corner Suite, Pool Suite, ADA Pool Suite — fixed floor plan, no bed picker
+    openRoom(String(num),type,null);
+  }
+}
+function pickBed(bed){
+  closeBedPicker();
+  if(!_pendingRoomClick)return;
+  const key=`${ST.floor}_${_pendingRoomClick.num}`;
+  ST.bedTypes[key]=bed;
+  persistSettings();
+  openRoom(String(_pendingRoomClick.num),_pendingRoomClick.type,bed);
+  _pendingRoomClick=null;
+}
+function closeBedPicker(){document.getElementById('bed-picker').classList.remove('open');}
+function openArea(areaKey,label){
+  const planSrc=getFloorPlanSrc(ST.floor);
+  openRoomPanel(ST.floor,areaKey,label,areaKey==='corridor'?'Corridor':'Elevator Lobby',null,planSrc);
+}
+function openRoom(areaKey,roomType,bedType){
+  const planSrc=getRoomPlanSrc(roomType,bedType)||'';
+  const label='Room '+areaKey;
+  openRoomPanel(ST.floor,areaKey,label,roomType,bedType,planSrc);
+}
+
+// ─── ROOM PANEL ───────────────────────────────────────────────────────────────
+async function openRoomPanel(floor,areaKey,label,roomType,bedType,planSrc){
+  ST.room={floor,areaKey,label,roomType,bedType};
+  ST.pendingDot=null;ST.pendingPhotos=[];
+  document.getElementById('panel-num').textContent=label;
+  document.getElementById('panel-sub').textContent=floorLabel(floor);
+  const bedLabel=bedType?(bedType==='king'?' · King':' · Double'):'';
+  document.getElementById('panel-tag').textContent=roomType+bedLabel;
+  // Floor plan
+  const img=document.getElementById('panel-fp-img');
+  const canvas=document.getElementById('panel-fp-canvas');
+  if(planSrc){
+    img.src=planSrc;img.style.display='block';
+    const fpWrap=document.getElementById('fp-wrap');
+    fpWrap.style.display='';
+    const doLoad=()=>{
+      if(areaKey==='elevator'){
+        // Zoom into elevator lobby end (right ~80% of floor plan)
+        const wrapW=fpWrap.clientWidth||320;
+        const targetW=Math.max(wrapW*2.2,600);
+        img.style.maxWidth='none';img.style.width=targetW+'px';
+        // Allow browser to reflow before sizing canvas
+        requestAnimationFrame(()=>{
+          resizePanelCanvas();loadAndDrawDots();
+          setTimeout(()=>{fpWrap.scrollLeft=targetW*0.78-wrapW/2;fpWrap.scrollTop=0;},50);
+        });
+      }else{
+        img.style.maxWidth='';img.style.width='';
+        resizePanelCanvas();loadAndDrawDots();
+      }
+    };
+    img.onload=doLoad;
+    if(img.complete&&img.naturalWidth)doLoad();
+  }else{
+    img.src='';img.style.display='none';
+    canvas.width=0;canvas.height=0;
+    document.getElementById('fp-wrap').style.display='none';
+  }
+  buildTradeSelect();const _initTrade=document.getElementById('issue-trade').value;setCoDisplay('issue-co-display','issue-co-name',getTradeCompany(_initTrade));
+  document.getElementById('pending-thumbs').innerHTML='';
+  document.getElementById('issue-desc').value='';
+  updateDotStatus();
+  await loadIssueList();
+  document.getElementById('room-panel').classList.add('open');
+  document.getElementById('issue-desc').focus();
+}
+function closePanel(){
+  document.getElementById('room-panel').classList.remove('open');
+  // Reset any elevator zoom
+  const fpImg=document.getElementById('panel-fp-img');
+  fpImg.style.maxWidth='';fpImg.style.width='';
+  document.getElementById('fp-wrap').scrollLeft=0;
+  ST.room=null;ST.pendingDot=null;ST.pendingPhotos=[];
+  renderAll();
+}
+function handleFpError(){
+  document.getElementById('fp-wrap').style.display='none';
+}
+function resizePanelCanvas(){
+  const img=document.getElementById('panel-fp-img');
+  const canvas=document.getElementById('panel-fp-canvas');
+  const w=img.offsetWidth,h=img.offsetHeight;
+  if(!w||!h)return;
+  canvas.width=w;canvas.height=h;
+  canvas.style.width=w+'px';canvas.style.height=h+'px';
+}
+async function loadAndDrawDots(){
+  if(!ST.room)return;
+  const issues=await DB.getIssues(ST.room.floor,ST.room.areaKey);
+  const canvas=document.getElementById('panel-fp-canvas');
+  if(!canvas.width)return;
+  const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);
+  issues.filter(i=>!i.resolved&&i.dotX!==null&&i.dotY!==null).forEach((iss,idx)=>{
+    const x=(iss.dotX/100)*canvas.width,y=(iss.dotY/100)*canvas.height;
+    drawDot(ctx,x,y,idx+1,'#e8a020');
+  });
+  if(ST.pendingDot){
+    const x=(ST.pendingDot.x/100)*canvas.width,y=(ST.pendingDot.y/100)*canvas.height;
+    drawDot(ctx,x,y,'?','#9fb3c8');
+  }
+}
+function drawDot(ctx,x,y,label,color){
+  ctx.beginPath();ctx.arc(x,y,11,0,2*Math.PI);
+  ctx.fillStyle=color||'#e8a020';ctx.fill();
+  ctx.strokeStyle='#1c2b3a';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='bold 11px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(String(label),x,y);
+}
+// Canvas tap handler for dot placement
+document.getElementById('panel-fp-canvas').addEventListener('click',function(e){
+  const canvas=this;const rect=canvas.getBoundingClientRect();
+  const x=((e.clientX-rect.left)/rect.width)*100;
+  const y=((e.clientY-rect.top)/rect.height)*100;
+  ST.pendingDot={x:parseFloat(x.toFixed(1)),y:parseFloat(y.toFixed(1))};
+  updateDotStatus();loadAndDrawDots();
+});
+document.getElementById('panel-fp-canvas').addEventListener('touchend',function(e){
+  e.preventDefault();
+  const t=e.changedTouches[0];const rect=this.getBoundingClientRect();
+  const x=((t.clientX-rect.left)/rect.width)*100;
+  const y=((t.clientY-rect.top)/rect.height)*100;
+  ST.pendingDot={x:parseFloat(x.toFixed(1)),y:parseFloat(y.toFixed(1))};
+  updateDotStatus();loadAndDrawDots();
+});
+function updateDotStatus(){
+  const el=document.getElementById('dot-status');
+  if(!el)return;
+  el.textContent=ST.pendingDot?`Location: placed at (${ST.pendingDot.x.toFixed(0)}%, ${ST.pendingDot.y.toFixed(0)}%) — tap plan to reposition`:'Location: not placed — tap floor plan above';
+  el.style.color=ST.pendingDot?'#006630':'#888';
+}
+
+// ─── ISSUE LIST ───────────────────────────────────────────────────────────────
+async function loadIssueList(){
+  if(!ST.room)return;
+  const issues=await DB.getIssues(ST.room.floor,ST.room.areaKey);
+  ST.issues=issues;
+  await renderIssueList();
+}
+async function renderIssueList(){
+  const list=document.getElementById('issue-list');
+  if(!ST.issues.length){list.innerHTML='<div class="issue-empty">No punch items yet — add one above.</div>';return;}
+  let html='';
+  let openIdx=0;
+  for(const iss of ST.issues){
+    const photos=await DB.getPhotos(iss.id);
+    const tl=tradeLabel(iss.tradeId);
+    const isWishlist=iss.tradeId===WISHLIST_TRADE_ID;
+    const dispIdx=iss.resolved?'✓':++openIdx;
+    const dotHtml=iss.dotX!==null?'<span class="dot-placed" title="Location marked on plan"></span>':'';
+    const photoHtml=photos.map(p=>`<div class="photo-thumb-wrap"><img class="photo-thumb" src="${getPhotoUrl(p)}" onclick="viewPhoto('${getPhotoUrl(p)}')" loading="lazy"><button class="photo-del" onclick="delPhoto(${p.id},${iss.id})" title="Delete photo">×</button></div>`).join('');
+    html+=`<div class="issue-item${iss.resolved?' resolved':''}">
+      <span class="issue-num">#${dispIdx}</span>
+      <div class="issue-body" id="ib_${iss.id}">
+        <div class="issue-text">${dotHtml}${esc(iss.description)}</div>
+        <div class="issue-tags">
+          ${tl?`<span class="tag ${isWishlist?'tag-wishlist':'tag-trade'}">${esc(tl)}</span>`:''}
+          ${iss.companyName?`<span class="tag tag-co">${esc(iss.companyName)}</span>`:''}
+          ${iss.synced?`<span class="tag tag-synced">&#10003; Forma #${iss.formaId||'?'}</span>`:`<span class="tag tag-pending">Pending sync</span>`}
+        </div>
+        <div class="photo-row">${photoHtml}
+          <button class="btn-photo" style="width:50px;height:50px;font-size:10px;padding:2px;" onclick="addPhoto(${iss.id})">📷<br>Add</button>
+        </div>
+      </div>
+      <div class="issue-actions">
+        <button class="btn-edit" onclick="editIssue(${iss.id})">Edit</button>
+        ${!iss.synced?`<button class="btn-sync-one" onclick="syncOne(${iss.id})">&#8593; Sync</button>`:''}
+        <button class="btn-resolve" onclick="toggleResolve(${iss.id})">${iss.resolved?'Reopen':'Resolve'}</button>
+        <button class="btn-del" onclick="delIssue(${iss.id})">Del</button>
+      </div>
+    </div>`;
+  }
+  list.innerHTML=html;
+}
+
+// ─── ISSUE CRUD ───────────────────────────────────────────────────────────────
+function buildTradeSelect(){
+  const sel=document.getElementById('issue-trade');
+  sel.innerHTML='<option value="">— Select Trade —</option>';
+  TRADES.forEach(t=>{
+    const lbl=(ST.cfg.tradeLabels&&ST.cfg.tradeLabels[t.id])||t.label;
+    sel.innerHTML+=`<option value="${t.id}">${lbl}</option>`;
+  });
+  (ST.cfg.customTrades||[]).forEach((c,i)=>{
+    sel.innerHTML+=`<option value="custom_${i}">${c.label}</option>`;
+  });
+  if(ST.cfg.lastTrade)sel.value=ST.cfg.lastTrade;
+}
+function getTradeCompany(tradeId){
+  if(!tradeId)return '';
+  if(tradeId===GENERAL_TRADE_ID||tradeId===WISHLIST_TRADE_ID)return HARRIS_CO;
+  const custom=(ST.cfg.customTrades||[]);
+  if(tradeId.startsWith('custom_')){
+    const idx=parseInt(tradeId.replace('custom_',''));
+    return custom[idx]&&custom[idx].company||'';
+  }
+  return (ST.cfg.tradeDefaults&&ST.cfg.tradeDefaults[tradeId])||'';
+}
+function setCoDisplay(elId,nameElId,coName){
+  const wrap=document.getElementById(elId);
+  const nameEl=document.getElementById(nameElId);
+  if(!wrap||!nameEl)return;
+  if(coName){wrap.classList.add('has-co');nameEl.textContent=coName;}
+  else{wrap.classList.remove('has-co');nameEl.textContent='No company mapped — check Setup';}
+}
+function onTradeChange(tradeId){
+  const co=getTradeCompany(tradeId);
+  setCoDisplay('issue-co-display','issue-co-name',co);
+  ST.cfg.lastTrade=tradeId;
+}
+async function submitIssue(){
+  const desc=document.getElementById('issue-desc').value.trim();
+  if(!desc){document.getElementById('issue-desc').focus();return;}
+  if(!ST.room)return;
+  const tradeId=document.getElementById('issue-trade').value;
+  const coName=getTradeCompany(tradeId);
+  const issue={
+    floor:ST.room.floor,areaKey:ST.room.areaKey,areaLabel:ST.room.label,
+    roomType:ST.room.roomType,bedType:ST.room.bedType,
+    description:desc,tradeId,companyName:coName,
+    dotX:ST.pendingDot?ST.pendingDot.x:null,
+    dotY:ST.pendingDot?ST.pendingDot.y:null,
+    resolved:false,synced:false,formaId:null,
+    createdAt:Date.now()
+  };
+  const issueId=await DB.addIssue(issue);
+  // Save photos
+  for(const pp of ST.pendingPhotos){
+    await DB.addPhoto({issueId,blob:pp.blob,watermarkedBlob:pp.watermarkedBlob,filename:pp.filename,createdAt:Date.now()});
+  }
+  ST.cfg.lastTrade=tradeId;
+  await persistSettings();
+  // Reset form
+  document.getElementById('issue-desc').value='';
+  ST.pendingDot=null;ST.pendingPhotos=[];
+  document.getElementById('pending-thumbs').innerHTML='';
+  updateDotStatus();
+  await loadIssueList();
+  await loadAndDrawDots();
+  renderFloorTabs();
+  await updateStats();
+}
+async function delIssue(id){
+  if(!confirm('Delete this punch item?'))return;
+  await DB.deletePhotosByIssue(id);
+  await DB.deleteIssue(id);
+  await loadIssueList();
+  await loadAndDrawDots();
+  renderFloorTabs();
+  await updateStats();
+}
+async function editIssue(id){
+  const iss=ST.issues.find(i=>i.id===id);
+  if(!iss)return;
+  const bodyEl=document.getElementById('ib_'+id);
+  if(!bodyEl)return;
+  // Trade options
+  let tradeOpts='<option value="">— Trade —</option>';
+  TRADES.forEach(t=>{
+    const lbl=(ST.cfg.tradeLabels&&ST.cfg.tradeLabels[t.id])||t.label;
+    tradeOpts+=`<option value="${t.id}"${t.id===iss.tradeId?' selected':''}>${lbl}</option>`;
+  });
+  (ST.cfg.customTrades||[]).forEach((c,i)=>{
+    tradeOpts+=`<option value="custom_${i}"${`custom_${i}`===iss.tradeId?' selected':''}>${c.label}</option>`;
+  });
+  // Company options
+  const active=ST.cfg.activeCompanies||[];
+  let coOpts='<option value="">— Company —</option>';
+  COMPANIES.filter(c=>active.includes(c.name)).forEach(c=>{
+    coOpts+=`<option value="${c.name}"${c.name===iss.companyName?' selected':''}>${c.name}</option>`;
+  });
+  // Photos
+  const photos=await DB.getPhotos(id);
+  const photoHtml=photos.map(p=>`<div class="photo-thumb-wrap"><img class="photo-thumb" src="${getPhotoUrl(p)}" onclick="viewPhoto('${getPhotoUrl(p)}')" loading="lazy"><button class="photo-del" onclick="delPhotoInEdit(${p.id},${id})" title="Delete photo">×</button></div>`).join('');
+  const currentCo=getTradeCompany(iss.tradeId)||iss.companyName||'';
+  bodyEl.innerHTML=`
+    <textarea class="edit-field" id="ed_desc_${id}" rows="2" maxlength="400">${esc(iss.description)}</textarea>
+    <div class="edit-row">
+      <select class="edit-sel" id="ed_trade_${id}" onchange="onEditTradeChange(${id},this.value)">${tradeOpts}</select>
+      <div class="co-lock${currentCo?' has-co':''}" id="ed_co_wrap_${id}"><span class="co-lock-icon">🔒</span><span id="ed_co_name_${id}">${currentCo||'No company mapped — check Setup'}</span></div>
+    </div>
+    <div class="photo-row" style="margin-bottom:6px;">${photoHtml}
+      <button class="btn-photo" style="width:50px;height:50px;font-size:10px;padding:2px;" onclick="addPhoto(${id})">📷<br>Add</button>
+    </div>
+    <div style="display:flex;gap:5px;">
+      <button class="btn-save-edit" onclick="saveEdit(${id})">Save</button>
+      <button class="btn-cancel-edit" onclick="renderIssueList()">Cancel</button>
+    </div>`;
+  document.getElementById('ed_desc_'+id).focus();
+}
+function onEditTradeChange(id,tradeId){
+  const co=getTradeCompany(tradeId);
+  setCoDisplay('ed_co_wrap_'+id,'ed_co_name_'+id,co);
+}
+async function saveEdit(id){
+  const iss=ST.issues.find(i=>i.id===id);
+  if(!iss)return;
+  const desc=document.getElementById('ed_desc_'+id).value.trim();
+  const tradeId=document.getElementById('ed_trade_'+id).value;
+  const coName=getTradeCompany(tradeId)||iss.companyName;
+  if(!desc){alert('Description is required.');return;}
+  const changed=desc!==iss.description||(tradeId&&tradeId!==iss.tradeId)||coName!==iss.companyName;
+  iss.description=desc;
+  if(tradeId)iss.tradeId=tradeId;
+  iss.companyName=coName;
+  if(changed&&iss.synced){iss.synced=false;iss.formaId=null;}
+  await DB.updateIssue(iss);
+  await loadIssueList();
+  await renderGrid();
+}
+async function toggleResolve(id){
+  const issues=await DB.getIssues(ST.room.floor,ST.room.areaKey);
+  const iss=issues.find(i=>i.id===id);
+  if(!iss)return;
+  iss.resolved=!iss.resolved;
+  await DB.updateIssue(iss);
+  await loadIssueList();
+  await loadAndDrawDots();
+  renderFloorTabs();
+  await updateStats();
+}
+function revokePhotoUrl(photoId){
+  const url=ST.photoUrls.get(photoId);
+  if(url){URL.revokeObjectURL(url);ST.photoUrls.delete(photoId);}
+}
+async function delPhoto(photoId,issueId){
+  if(!confirm('Delete this photo?'))return;
+  revokePhotoUrl(photoId);
+  await DB.deletePhoto(photoId);
+  await loadIssueList();
+}
+async function delPhotoInEdit(photoId,issueId){
+  if(!confirm('Delete this photo?'))return;
+  revokePhotoUrl(photoId);
+  await DB.deletePhoto(photoId);
+  await editIssue(issueId);
+}
+
+// ─── PHOTO HANDLING ───────────────────────────────────────────────────────────
+let _photoTarget=null; // null=pending, issueId=existing
+function addPhoto(issueIdOrNull){
+  _photoTarget=issueIdOrNull;
+  const inp=document.getElementById('photo-input');
+  inp.value='';inp.click();
+}
+async function handlePhotoFile(e){
+  const file=e.target.files[0];if(!file)return;
+  const img=await loadImageFromFile(file);
+  if(!img)return;
+  const label=buildWatermarkLabel(_photoTarget);
+  const watermarkedBlob=await applyWatermark(img,label);
+  const originalBlob=file;
+  const ts=Date.now();
+  const filename=buildPhotoFilename(ts);
+  if(_photoTarget===null){
+    // Pending
+    const url=URL.createObjectURL(watermarkedBlob);
+    ST.pendingPhotos.push({blob:originalBlob,watermarkedBlob,filename});
+    const wrap=document.createElement('div');wrap.className='pending-thumb-wrap';
+    const im=document.createElement('img');im.className='pending-thumb';im.src=url;
+    const del=document.createElement('button');del.className='thumb-del';del.textContent='×';
+    const idx=ST.pendingPhotos.length-1;
+    del.onclick=()=>{ST.pendingPhotos.splice(idx,1);wrap.remove();};
+    wrap.appendChild(im);wrap.appendChild(del);
+    document.getElementById('pending-thumbs').appendChild(wrap);
+  }else{
+    // Attach to existing issue
+    const pId=await DB.addPhoto({issueId:_photoTarget,blob:originalBlob,watermarkedBlob,filename,createdAt:ts});
+    if(ST.cfg.autoDownload)downloadBlob(watermarkedBlob,filename);
+    await loadIssueList();
+  }
+  if(_photoTarget===null&&ST.cfg.autoDownload)downloadBlob(watermarkedBlob,filename);
+}
+function loadImageFromFile(file){
+  return new Promise(res=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{const img=new Image();img.onload=()=>res(img);img.onerror=()=>res(null);img.src=ev.target.result;};
+    reader.onerror=()=>res(null);
+    reader.readAsDataURL(file);
+  });
+}
+function buildWatermarkLabel(issueId){
+  const r=ST.room;
+  const line1=`${r?r.label:'Room'} · ${r?r.floor+' Floor':''}`;
+  return line1;
+}
+function buildPhotoFilename(ts){
+  const r=ST.room;
+  const f=r?r.floor.replace(/\s/g,''):'Floor';
+  const loc=r?r.areaKey.replace(/\s/g,'_'):'loc';
+  return `${f}_${loc}_Photo_${dateStamp()}_${ts%10000}.jpg`;
+}
+async function applyWatermark(imgEl,label){
+  const MAX=1200;
+  let w=imgEl.naturalWidth,h=imgEl.naturalHeight;
+  if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d');ctx.drawImage(imgEl,0,0,w,h);
+  const pad=12,lines=label.split('\n');
+  const fontSize=Math.max(18,Math.round(w/22));
+  ctx.font=`bold ${fontSize}px Arial`;ctx.textBaseline='bottom';
+  const maxW=Math.max(...lines.map(l=>ctx.measureText(l).width));
+  const lineH=fontSize*1.35,boxH=lines.length*lineH+pad*1.5,boxW=maxW+pad*2;
+  const bx=pad,by=h-boxH-pad;
+  ctx.fillStyle='rgba(0,0,0,0.6)';ctx.beginPath();
+  const r=6;ctx.moveTo(bx+r,by);ctx.lineTo(bx+boxW-r,by);ctx.quadraticCurveTo(bx+boxW,by,bx+boxW,by+r);
+  ctx.lineTo(bx+boxW,by+boxH-r);ctx.quadraticCurveTo(bx+boxW,by+boxH,bx+boxW-r,by+boxH);
+  ctx.lineTo(bx+r,by+boxH);ctx.quadraticCurveTo(bx,by+boxH,bx,by+boxH-r);
+  ctx.lineTo(bx,by+r);ctx.quadraticCurveTo(bx,by,bx+r,by);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#fff';
+  lines.forEach((line,i)=>{ctx.fillText(line,bx+pad,by+boxH-pad*0.5-((lines.length-1-i)*lineH));});
+  const dateStr=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const fs2=Math.max(12,Math.round(fontSize*0.65));
+  ctx.font=`${fs2}px Arial`;
+  const dw=ctx.measureText(dateStr).width;
+  ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(w-dw-pad*2,pad*0.5,dw+pad*1.5,fs2+pad);
+  ctx.fillStyle='#fff';ctx.textBaseline='top';ctx.fillText(dateStr,w-dw-pad*1.25,pad*0.75);
+  return new Promise(res=>canvas.toBlob(b=>res(b),'image/jpeg',0.75));
+}
+function viewPhoto(url){
+  document.getElementById('lb-img').src=url;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lb-img').src='';
+}
+
+// ─── STATS ────────────────────────────────────────────────────────────────────
+async function updateStats(){
+  const all=await DB.getAllIssues();
+  const rooms=new Set();let total=0,open=0,res=0,syn=0;
+  all.forEach(i=>{
+    rooms.add(i.floor+'_'+i.areaKey);total++;
+    if(i.resolved)res++;else open++;
+    if(i.synced)syn++;
+  });
+  document.getElementById('s-rooms').textContent=rooms.size;
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-open').textContent=open;
+  document.getElementById('s-res').textContent=res;
+  document.getElementById('s-syn').textContent=syn;
+  document.getElementById('s-pend').textContent=total-syn;
+}
+
+// ─── EXPORTS ──────────────────────────────────────────────────────────────────
+function doExport(){
+  const fmt=document.getElementById('export-fmt').value;
+  if(fmt==='txt')exportTxt();
+  else if(fmt==='csv')exportCsv();
+  else exportPdf();
+}
+async function exportTxt(){
+  const all=await DB.getAllIssues();
+  const lines=['CASABLANCA PUNCH LIST — '+new Date().toLocaleString(),''];
+  FLOOR_KEYS.forEach(fk=>{
+    const fi=all.filter(i=>i.floor===fk);if(!fi.length)return;
+    lines.push('='.repeat(50),fk.toUpperCase()+' FLOOR','='.repeat(50));
+    AREAS.forEach(a=>{
+      const ai=fi.filter(i=>i.areaKey===a.key);if(!ai.length)return;
+      lines.push('\n'+a.label);
+      ai.forEach((iss,idx)=>{lines.push(`  ${idx+1}. [${iss.resolved?'RESOLVED':'OPEN'}][${iss.synced?'SYNCED':'PENDING'}] ${iss.description}${iss.tradeId?` [${tradeLabel(iss.tradeId)}]`:''}${iss.companyName?' — '+iss.companyName:''}`);});
+    });
+    const roomNums=[...new Set(fi.filter(i=>!['corridor','elevator'].includes(i.areaKey)).map(i=>i.areaKey))].sort((a,b)=>parseInt(a)-parseInt(b));
+    roomNums.forEach(ak=>{
+      const ri=fi.filter(i=>i.areaKey===ak);if(!ri.length)return;
+      lines.push('\nRoom '+ak+(ri[0].roomType&&ri[0].roomType!=='Regular'?' ('+ri[0].roomType+')':''));
+      ri.forEach((iss,idx)=>{lines.push(`  ${idx+1}. [${iss.resolved?'RESOLVED':'OPEN'}][${iss.synced?'SYNCED':'PENDING'}] ${iss.description}${iss.tradeId?` [${tradeLabel(iss.tradeId)}]`:''}${iss.companyName?' — '+iss.companyName:''}`);});
+    });
+    lines.push('');
+  });
+  downloadBlob(new Blob([lines.join('\n')],{type:'text/plain'}),'CasablancaPunchList_'+dateStamp()+'.txt');
+}
+async function exportCsv(){
+  const all=await DB.getAllIssues();
+  const photos=await DB.getAllPhotos();
+  const photoCnt={};photos.forEach(p=>{photoCnt[p.issueId]=(photoCnt[p.issueId]||0)+1;});
+  const header=['Floor','Area/Room','Room Type','Bed Type','Description','Trade','Company','Status','Synced','Forma ID','Photos','Date Added'];
+  const rows=[header];
+  all.sort((a,b)=>FLOOR_KEYS.indexOf(a.floor)-FLOOR_KEYS.indexOf(b.floor)||(parseInt(a.areaKey)||0)-(parseInt(b.areaKey)||0)||(a.createdAt-b.createdAt));
+  rows.push(...all.map(i=>[i.floor,i.areaLabel||i.areaKey,i.roomType||'',i.bedType||'',i.description,tradeLabel(i.tradeId),i.companyName||'',i.resolved?'Resolved':'Open',i.synced?'Synced':'Pending',i.formaId||'',photoCnt[i.id]||0,new Date(i.createdAt).toLocaleDateString()]));
+  const csv='﻿'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),'CasablancaPunchList_'+dateStamp()+'.csv');
+}
+async function exportPdf(){
+  const all=await DB.getAllIssues();
+  const allPhotos=await DB.getAllPhotos();
+  // Group photos by issueId
+  const photoMap={};allPhotos.forEach(p=>{(photoMap[p.issueId]=photoMap[p.issueId]||[]).push(p);});
+  // Collect open items by floor/area
+  const floorData=[];
+  for(const fk of FLOOR_KEYS){
+    const fi=all.filter(i=>i.floor===fk&&!i.resolved);if(!fi.length)continue;
+    const sections=new Map();
+    fi.forEach(i=>{
+      const key=i.areaKey;
+      if(!sections.has(key))sections.set(key,{label:i.areaLabel||('Room '+i.areaKey),type:i.roomType||'Area',items:[]});
+      sections.get(key).items.push({...i,photos:photoMap[i.id]||[]});
+    });
+    floorData.push({floor:fk,sections:[...sections.values()]});
+  }
+  // Build print HTML
+  const photoHtmlFor=async(photos)=>{
+    const imgs=[];for(const p of photos){const url=getPhotoUrl(p);imgs.push(`<img src="${url}" style="max-width:100%;width:auto;height:auto;max-height:220px;border-radius:4px;border:1px solid #ddd;margin:4px;">`);}
+    return imgs.join('');
+  };
+  let roomPages='';
+  for(const fd of floorData){
+    for(const sec of fd.sections){
+      const itemsHtml=await Promise.all(sec.items.map(async(it,idx)=>{
+        const tl=tradeLabel(it.tradeId);
+        const photoHtml=it.photos.length?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">${await photoHtmlFor(it.photos)}</div>`:'';
+        return `<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0f0;page-break-inside:avoid;">
+          <span style="font-size:11px;font-weight:700;color:#e8a020;min-width:22px;">#${idx+1}</span>
+          <div style="flex:1;">
+            <div style="font-size:13px;margin-bottom:4px;">${esc(it.description)}</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:3px;">
+              ${tl?`<span style="background:#e8f0ff;color:#1a3a8a;border:1px solid #b0c0f0;font-size:10px;padding:2px 7px;border-radius:3px;font-weight:600;">${esc(tl)}</span>`:''}
+              ${it.companyName?`<span style="background:#f0fff0;color:#1a5a1a;border:1px solid #a0d0a0;font-size:10px;padding:2px 7px;border-radius:3px;font-weight:600;">${esc(it.companyName)}</span>`:''}
+            </div>
+            ${photoHtml}
+          </div>
+        </div>`;
+      }));
+      roomPages+=`<div style="page-break-before:always;padding:20px;">
+        <div style="background:#1c2b3a;color:#fff;padding:12px 18px;border-radius:6px 6px 0 0;display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:10px;color:#9fb3c8;">Casablanca Punch List · ${new Date().toLocaleDateString()}</div><div style="font-size:18px;font-weight:700;margin:2px 0;">${sec.label}</div><div style="font-size:11px;color:#9fb3c8;">${fd.floor} Floor · ${sec.type}</div></div>
+          <div style="text-align:center;background:rgba(255,255,255,.1);padding:8px 14px;border-radius:4px;"><div style="font-size:20px;font-weight:700;color:#f08080;">${sec.items.length}</div><div style="font-size:10px;color:#9fb3c8;">Open Items</div></div>
+        </div>
+        <div style="border:1px solid #ddd;border-top:none;border-radius:0 0 6px 6px;padding:0 18px;">
+          ${itemsHtml.join('')}
+        </div>
+      </div>`;
+    }
+  }
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Casablanca Punch List</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;}@media print{@page{margin:15mm;}}</style></head><body>${roomPages}</body></html>`);
+  w.document.close();setTimeout(()=>w.print(),800);
+}
+async function exportPhotosZip(){
+  const issues=await DB.getFloorIssues(ST.floor);
+  const zip=MiniZip.create();let count=0;
+  for(const iss of issues){
+    const photos=await DB.getPhotos(iss.id);
+    for(const p of photos){
+      const ab=await blobToArrayBuffer(p.watermarkedBlob||p.blob);
+      zip.addBytes(`${ST.floor}/${iss.areaLabel||iss.areaKey}/${p.filename||'photo_'+p.id+'.jpg'}`,new Uint8Array(ab));
+      count++;
+    }
+  }
+  if(!count){alert('No photos on '+ST.floor+' Floor.');return;}
+  const blob=await zip.toBlob();
+  downloadBlob(blob,'Casablanca_'+ST.floor+'Floor_Photos_'+dateStamp()+'.zip');
+}
+
+// ─── ACC FORMA SYNC ───────────────────────────────────────────────────────────
+async function openSyncModal(){
+  const pending=(await DB.getAllIssues()).filter(i=>!i.synced&&!i.resolved);
+  const auth=await DB.getSetting('auth',null);
+  const isAuthed=!!(auth&&auth.accessToken&&auth.expiresAt>Date.now());
+  const due=addBusinessDays(new Date(),5);
+  // Group pending by company
+  const byco={};pending.forEach(i=>{const c=i.companyName||'Unassigned';byco[c]=(byco[c]||0)+1;});
+  const coLines=Object.entries(byco).map(([c,n])=>`<span style="display:inline-block;background:#e8f0ff;border:1px solid #b0c0f0;border-radius:3px;padding:2px 7px;font-size:11px;margin:2px;">${n} &times; ${c}</span>`).join(' ');
+  document.getElementById('sync-summary').innerHTML=
+    `<strong>${pending.length}</strong> item(s) pending &nbsp;·&nbsp; Account: <strong style="color:${isAuthed?'#006630':'#c00'}">${isAuthed?(auth.userName||'Logged in'):'Not logged in'}</strong><br>`+
+    `<span style="font-size:12px;color:#555;">Due date: <strong>${due}</strong> &nbsp;·&nbsp; Watchers: <strong>${(ST.cfg.watchers||[]).length}</strong></span><br>`+
+    (coLines?`<div style="margin-top:6px;">${coLines}</div>`:'')+
+    `<div style="margin-top:8px;font-size:11px;color:#555;">Phase 1: creates all issues &nbsp;&middot;&nbsp; Phase 2: assigns companies &amp; notifies subs</div>`;
+  document.getElementById('no-token-note').style.display=isAuthed?'none':'';
+  document.getElementById('sync-btn').style.display=isAuthed?'':'none';
+  document.getElementById('sync-log').textContent='Ready.';
+  document.getElementById('prog-bar').style.width='0%';
+  document.getElementById('sync-modal').classList.add('open');
+}
+function closeSyncModal(){document.getElementById('sync-modal').classList.remove('open');}
+async function copySyncPayload(){
+  const issues=await DB.getAllIssues();
+  const pending=issues.filter(i=>!i.synced&&!i.resolved);
+  const due=addBusinessDays(new Date(),5);
+  const payload=pending.map(i=>({floor:i.floor,room:i.areaLabel||i.areaKey,roomType:i.roomType,description:i.description,trade:tradeLabel(i.tradeId),company:i.companyName,dueDate:due}));
+  const text=JSON.stringify(payload,null,2);
+  navigator.clipboard.writeText(text).then(()=>alert('Sync payload copied to clipboard.\nPaste into Claude and ask: "Push these to ACC Forma as punch list issues using the Ask Harris M365 MCP."')).catch(()=>{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);alert('Payload copied.');});
+}
+async function startSync(){
+  const pending=(await DB.getAllIssues()).filter(i=>!i.synced&&!i.resolved);
+  if(!pending.length){alert('No pending items.');return;}
+  const btn=document.getElementById('sync-btn');btn.disabled=true;btn.textContent='Syncing…';
+  const log=document.getElementById('sync-log');log.innerHTML='<div class="log-inf">Starting sync for '+pending.length+' item(s)…</div>';
+  let token;
+  try{token=await getAccToken();}catch(e){logLine(log,'err','Auth error: '+e.message);btn.disabled=false;btn.textContent='Start Sync';return;}
+  const pid=ST.cfg.projectId;
+  const due=addBusinessDays(new Date(),5);
+  const watcherIds=(ST.cfg.watchers||[]).filter(k=>k&&!k.startsWith('email:'));
+  let ok=0,fail=0;
+  for(let i=0;i<pending.length;i++){
+    const iss=pending[i];
+    document.getElementById('prog-bar').style.width=Math.round((i/pending.length)*100)+'%';
+    logLine(log,'inf',`[${i+1}/${pending.length}] ${iss.areaLabel||iss.areaKey} — ${iss.description.substring(0,60)}`);
+    try{
+      const body={title:`${iss.areaLabel||iss.areaKey} (${iss.floor} Floor) — ${iss.description}`,description:`Punch list item\nLocation: ${iss.areaLabel||iss.areaKey}, ${iss.floor} Floor\nAssigned to: ${iss.companyName||'Unassigned'}\nDue: ${due}\n\n${iss.description}\n\n[Casablanca Punch Walk App]`,issueSubtypeId:resolveAccTradeId(iss.tradeId),status:'open',dueDate:due};
+      const co=liveCompanies().find(c=>c.name===iss.companyName);
+      if(co&&co.accId){body.assignedTo=co.accId;body.assignedToType='company';}
+      if(watcherIds.length)body.watcherIds=watcherIds;
+      const resp=await fetch(`https://developer.api.autodesk.com/construction/issues/v1/projects/${pid}/issues`,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(!resp.ok)throw new Error('HTTP '+resp.status);
+      const data=await resp.json();
+      const formaId=data.id||(data.data&&data.data.id)||'created';
+      iss.synced=true;iss.formaId=formaId;await DB.updateIssue(iss);
+      logLine(log,'ok','  ✓ Issue created: '+formaId);
+      // Attach photos
+      const photos=await DB.getPhotos(iss.id);
+      for(const ph of photos){
+        try{
+          const ab=await blobToArrayBuffer(ph.watermarkedBlob||ph.blob);
+          const fn=ph.filename||'photo.jpg';const sz=ab.byteLength;
+          const up=await fetch(`https://developer.api.autodesk.com/construction/issues/v1/projects/${pid}/issue-attachments:upload`,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({fileName:fn,fileSize:sz})});
+          if(!up.ok)throw new Error('Upload URL: HTTP '+up.status);
+          const ud=await up.json();
+          const uploadUrl=ud.uploadUrl||(ud.data&&ud.data.uploadUrl);
+          const attachId=ud.attachmentId||(ud.data&&ud.data.attachmentId);
+          if(!uploadUrl)throw new Error('No upload URL');
+          await fetch(uploadUrl,{method:'PUT',body:ph.watermarkedBlob||ph.blob,headers:{'Content-Type':'image/jpeg'}});
+          await fetch(`https://developer.api.autodesk.com/construction/issues/v1/projects/${pid}/issues/${formaId}/attachments`,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({attachmentId:attachId,fileName:fn,fileSize:sz})});
+          logLine(log,'ok','    ✓ Photo attached');
+        }catch(pe){logLine(log,'err','    ✗ Photo failed: '+pe.message);}
+      }
+      ok++;
+    }catch(err){logLine(log,'err','  ✗ Failed: '+err.message);fail++;}
+  }
+  document.getElementById('prog-bar').style.width='100%';
+  logLine(log,'ok',`Done: ${ok} synced, ${fail} failed.`);
+  btn.disabled=false;btn.textContent='Start Sync';
+  await renderAll();
+}
+async function syncOne(issueId){
+  const issues=await DB.getAllIssues();
+  const iss=issues.find(i=>i.id===issueId);if(!iss)return;
+  let token;
+  try{token=await getAccToken();}catch(e){alert('Not logged in: '+e.message);return;}
+  const pid=ST.cfg.projectId;
+  const due=addBusinessDays(new Date(),5);
+  const watcherIds=(ST.cfg.watchers||[]).filter(k=>k&&!k.startsWith('email:'));
+  const body={title:`${iss.areaLabel||iss.areaKey} (${iss.floor} Floor) — ${iss.description}`,description:`Punch list item\nLocation: ${iss.areaLabel||iss.areaKey}, ${iss.floor} Floor\nAssigned to: ${iss.companyName||'Unassigned'}\nDue: ${due}\n\n${iss.description}\n\n[Casablanca Punch Walk App]`,issueSubtypeId:resolveAccTradeId(iss.tradeId),status:'open',dueDate:due};
+  const co=liveCompanies().find(c=>c.name===iss.companyName);
+  if(co&&co.accId){body.assignedTo=co.accId;body.assignedToType='company';}
+  if(watcherIds.length)body.watcherIds=watcherIds;
+  try{
+    const resp=await fetch(`https://developer.api.autodesk.com/construction/issues/v1/projects/${pid}/issues`,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const data=await resp.json();
+    const formaId=data.id||(data.data&&data.data.id)||'created';
+    iss.synced=true;iss.formaId=formaId;await DB.updateIssue(iss);
+    alert('Synced to Forma: '+formaId);
+    await loadIssueList();await updateStats();await renderFloorTabs();
+  }catch(err){alert('Sync failed: '+err.message);}
+}
+function logLine(el,type,msg){const d=document.createElement('div');d.className='log-'+type;d.textContent=msg;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+
+// ─── MIGRATION FROM V2 ────────────────────────────────────────────────────────
+async function offerMigration(){
+  const old=localStorage.getItem('casablanca_punch_v2');
+  if(!old)return;
+  if(!confirm('Found existing punch data from the old app version. Import it into the new app?\n\nPhotos will be migrated as-is.'))return;
+  let data;try{data=JSON.parse(old);}catch(e){alert('Could not read old data.');return;}
+  let count=0;
+  for(const key in data){
+    const items=data[key];if(!Array.isArray(items))continue;
+    const parts=key.split('_');const floor=parts[0];const areaKey=parts[1];
+    const room=ROOMS[floor]&&ROOMS[floor].find(r=>String(r.num)===areaKey);
+    const areaRef=AREAS.find(a=>a.key===areaKey);
+    const label=room?'Room '+room.num:areaRef?areaRef.label:areaKey;
+    for(const item of items){
+      const issueId=await DB.addIssue({floor,areaKey,areaLabel:label,roomType:room?room.type:'Area',bedType:null,description:item.text,tradeId:item.tradeId||'',companyName:(item.assignee||'').split('|')[0],dotX:null,dotY:null,resolved:item.resolved||false,synced:item.synced||false,formaId:item.formaId||null,createdAt:item.ts||Date.now()});
+      for(const b64 of (item.photos||[])){
+        try{
+          const resp=await fetch(b64);const blob=await resp.blob();
+          await DB.addPhoto({issueId,blob,watermarkedBlob:blob,filename:'migrated_'+Date.now()+'.jpg',createdAt:Date.now()});
+        }catch(e){}
+      }
+      count++;
+    }
+  }
+  alert(`Migrated ${count} punch items. Old data kept in browser storage for safety.`);
+}
+
+// ─── RENDER ALL ───────────────────────────────────────────────────────────────
+async function renderAll(){
+  await renderFloorTabs();
+  if(ST.view==='grid')await renderGrid();
+  else await renderMapView();
+  await updateStats();
+}
+
+// ─── PWA: SERVICE WORKER + INSTALL + OFFLINE ─────────────────────────────────
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg=>{
+        // Check for updates on each load
+        reg.addEventListener('updatefound',()=>{
+          const nw=reg.installing;
+          nw.addEventListener('statechange',()=>{
+            if(nw.state==='installed'&&navigator.serviceWorker.controller){
+              // New version available — prompt user
+              if(confirm('A new version of the app is available. Reload to update?'))location.reload();
+            }
+          });
+        });
+      })
+      .catch(err=>console.warn('SW registration failed:',err));
+  });
+}
+
+// Install prompt
+let _installPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();_installPrompt=e;
+  // Don't show during auth callback, if already standalone, or if dismissed
+  const inAuthFlow=new URLSearchParams(window.location.search).has('code');
+  if(!inAuthFlow&&!window.matchMedia('(display-mode: standalone)').matches&&localStorage.getItem('pwa-dismissed')!=='1'){
+    document.getElementById('install-banner').classList.add('visible');
+  }
+});
+window.addEventListener('appinstalled',()=>{
+  _installPrompt=null;
+  document.getElementById('install-banner').classList.remove('visible');
+});
+// Already installed — hide banner immediately
+if(window.matchMedia('(display-mode: standalone)').matches){
+  document.getElementById('install-banner').style.display='none';
+}
+function installPwa(){
+  if(!_installPrompt)return;
+  _installPrompt.prompt();
+  _installPrompt.userChoice.then(r=>{
+    if(r.outcome==='accepted')document.getElementById('install-banner').classList.remove('visible');
+    _installPrompt=null;
+  });
+}
+function dismissInstall(){
+  document.getElementById('install-banner').classList.remove('visible');
+  localStorage.setItem('pwa-dismissed','1');
+}
+
+// Offline / online detection
+function updateOnlineStatus(){
+  const bar=document.getElementById('offline-bar');
+  const syncBtn=document.querySelector('.btn-blue[onclick="openSyncModal()"]');
+  if(navigator.onLine){
+    bar.classList.remove('visible');
+    if(syncBtn){syncBtn.style.opacity='';syncBtn.title='';}
+  }else{
+    bar.classList.add('visible');
+    if(syncBtn){syncBtn.style.opacity='0.45';syncBtn.title='Offline — sync unavailable';}
+  }
+}
+window.addEventListener('online',updateOnlineStatus);
+window.addEventListener('offline',updateOnlineStatus);
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightbox();});
+window.addEventListener('resize',()=>{if(ST.room){resizePanelCanvas();loadAndDrawDots();}});
+
+(async()=>{
+  await DB.open();
+  await loadSettings();
+  updateOnlineStatus();
+  const authed=await checkAuth();
+  if(!authed)return;
+  _updateProjectDisplay();
+  if(!ST.cfg.projectId){
+    // No project configured — send straight to Setup
+    openSettings();
+    // Show a banner inside the settings modal pointing to the Project section
+    const note=document.createElement('div');
+    note.style.cssText='background:#fff8e8;border:1.5px solid #e8a020;border-radius:6px;padding:10px 14px;font-size:12px;color:#7a4000;margin-bottom:12px;';
+    note.innerHTML='<strong>Welcome!</strong> Select an ACC project to get started — click <strong>Load My Projects</strong> below.';
+    const body=document.querySelector('#settings-modal .modal-body');
+    if(body)body.prepend(note);
+    return;
+  }
+  await offerMigration();
+  setView('grid');
+  await renderAll();
+})().catch(err=>{document.body.innerHTML=`<div style="padding:40px;text-align:center;font-family:Arial;"><h2 style="color:#c00">App failed to start</h2><p style="margin-top:12px;color:#555;">${err.message}</p><p style="margin-top:8px;font-size:12px;color:#888;">Try opening in Chrome or Edge. IndexedDB required.</p></div>`;});
+</script>
+</body>
+</html>
