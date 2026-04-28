@@ -1,10 +1,8 @@
 'use strict';
 const CACHE = 'punch-walk-v1';
 const CORE_ASSETS = [
-  './punch-tool.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
+  './punch-tool.html'
+  // manifest and icons are generated inline — no separate files needed
 ];
 
 self.addEventListener('install', e => {
