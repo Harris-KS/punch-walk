@@ -963,9 +963,12 @@ async function loadProjectList(){
     const hubsData=await hubsResp.json();
     const hubs=(hubsData.data||[]);
     if(!hubs.length)throw new Error('No ACC hubs found for this account.');
-    // Collect projects from all hubs
+    // Collect projects from ACC/BIM360 company hubs only (id starts with "b.")
+    // Personal Autodesk Teams hubs (id starts with "a.") show "Assets"/"Default Project" — skip them
+    const accHubs=hubs.filter(h=>h.id&&h.id.startsWith('b.'));
+    if(!accHubs.length)throw new Error('No ACC company hubs found. Make sure you are logged in with your Harris Associates email (kaynes@harrislv.com).');
     const allProjects=[];
-    for(const hub of hubs){
+    for(const hub of accHubs){
       const projResp=await fetch(`https://developer.api.autodesk.com/project/v1/hubs/${hub.id}/projects?pageNumber=0&pageLimit=100`,{headers:{'Authorization':'Bearer '+token}});
       if(!projResp.ok)continue;
       const projData=await projResp.json();
