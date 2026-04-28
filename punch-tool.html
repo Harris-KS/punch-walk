@@ -923,6 +923,10 @@ async function _refreshAuthSettingsPanel(){
 async function loadSettings(){
   const saved=await DB.getSetting('cfg',null);
   if(saved) ST.cfg={...DEFAULT_CFG,...saved,tradeDefaults:{...DEFAULT_TRADE_DEFAULTS,...(saved.tradeDefaults||{})}};
+  // Migrations — fix stale saved values when defaults change
+  const td=ST.cfg.tradeDefaults;
+  if(td['375cbd9a-055f-488e-a856-a56700766f87']==='Graniti Vicentia')
+    td['375cbd9a-055f-488e-a856-a56700766f87']='GoPro Interiors';
   const bt=await DB.getSetting('bedTypes',{});
   ST.bedTypes=bt||{};
 }

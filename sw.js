@@ -1,5 +1,5 @@
 'use strict';
-const CACHE = 'punch-walk-v4';
+const CACHE = 'punch-walk-v5';
 const CORE_ASSETS = [
   './punch-tool.html'
   // manifest and icons are generated inline — no separate files needed
