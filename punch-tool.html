@@ -1098,12 +1098,19 @@ async function fetchAccProjectData(){
       name:([u.firstName,u.lastName].filter(Boolean).join(' '))||u.email||'Unknown',
       email:u.email||'',
       id:u.autodeskId||u.uid||u.id||'',
-      roles:(u.roles||[]).map(r=>r.projectRole||r.role||r.name||'').filter(Boolean)
+      roles:(u.roles||[]).map(r=>r.projectRole||r.role||r.name||'').filter(Boolean),
+      companyId:u.companyId||(u.company&&u.company.id)||'',
+      companyName:u.companyName||(u.company&&u.company.name)||''
     })).filter(u=>u.email);
 
-    // Companies
-    const cos=await accFetchAll(`${BASE}/construction/admin/v1/projects/${pid}/companies`,token);
-    ST.cfg.accCompanies=cos.map(c=>({name:c.name||'',accId:c.id||c.companyId||''})).filter(c=>c.name);
+    // Companies — derived from users (ACC returns company info per user, not a separate endpoint)
+    const coMap=new Map();
+    users.forEach(u=>{
+      const id=u.companyId||(u.company&&u.company.id)||'';
+      const name=u.companyName||(u.company&&u.company.name)||'';
+      if(name&&!coMap.has(name))coMap.set(name,{name,accId:id});
+    });
+    ST.cfg.accCompanies=[...coMap.values()].sort((a,b)=>a.name.localeCompare(b.name));
 
     // Auto-set watchers for Superintendent / Project Manager / Project Engineer if none set yet
     if(!(ST.cfg.watchers||[]).length){
