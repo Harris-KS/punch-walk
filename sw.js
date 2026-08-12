@@ -1,25 +1,33 @@
 'use strict';
-const CACHE = 'punch-walk-v16';
-const CORE_ASSETS = [
+const CACHE = 'punch-walk-v17';
+// App shell — must all cache or the install is pointless.
+const SHELL_ASSETS = [
   './punch-tool.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png',
-  './floor-plans/complete/floor-1.png',
-  './floor-plans/complete/floor-2.png',
-  './floor-plans/complete/floor-3.png',
-  './floor-plans/complete/floor-4.png',
-  './floor-plans/complete/floor-5.png',
-  './floor-plans/complete/floor-6.png',
-  './floor-plans/complete/floor-7.png',
-  './floor-plans/complete/floor-8.png',
-  './floor-plans/complete/floor-9.png'
+  './icon-512.png'
+];
+// Floor plans — real filenames are "1st Floor.png"… (space, URL-encoded here).
+// Cached best-effort so one missing/oversized image can't fail the whole install.
+const FLOOR_ASSETS = [
+  './floor-plans/complete/1st%20Floor.png',
+  './floor-plans/complete/2nd%20Floor.png',
+  './floor-plans/complete/3rd%20Floor.png',
+  './floor-plans/complete/4th%20Floor.png',
+  './floor-plans/complete/5th%20Floor.png',
+  './floor-plans/complete/6th%20Floor.png',
+  './floor-plans/complete/7th%20Floor.png',
+  './floor-plans/complete/8th%20Floor.png',
+  './floor-plans/complete/9th%20Floor.png'
 ];
 
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
-      .then(c => c.addAll(CORE_ASSETS))
+      // Shell must cache (fail loudly if it can't); floor plans are best-effort
+      // so one missing/oversized image never breaks the offline install.
+      .then(c => c.addAll(SHELL_ASSETS)
+        .then(() => Promise.allSettled(FLOOR_ASSETS.map(u => c.add(u)))))
       .then(() => self.skipWaiting())
   );
 });
